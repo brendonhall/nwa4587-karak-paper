@@ -108,6 +108,11 @@ TIMA_MAPPING_SPLIT: dict[str, tuple[int, ...]] = {
 TIMA_MAPPING_COMBINED: dict[str, tuple[int, ...]] = {
     k: v for k, v in TIMA_MAPPING_SPLIT.items() if k != "Augite"
 }
+MAPPING_NAMES: dict[str, str] = {
+    **{k: k for k in TIMA_MAPPING_SPLIT},
+    "Augite": "Augite (high-Ca px)",
+    "Pigeonite": "Pigeonite (low-Ca px)",
+}
 TIMA_MAPPING_NOTES: dict[str, str] = {
     "Plagioclase": "Direct match",
     "Augite": "Direct match",
@@ -124,6 +129,8 @@ TIMA_MAPPING_NOTES: dict[str, str] = {
 COMBINED_PYROXENE_NOTE = "Augite + Pigeonite merged; TIMA low-Ca + high-Ca + Bi merged"
 # in combined mode: karak Augite -> Pigeonite's label; TIMA 2 and 5 -> 1
 TIMA_COMBINE_INTO = 1
+KARAK_COMBINE_FROM_KEY = "Augite"
+KARAK_COMBINE_INTO_KEY = "Pigeonite"
 TIMA_COMBINE_FROM = (2, 5)
 
 EXCLUDED_KARAK_KEYS: tuple[str, ...] = ("Zn-bearing Phase", "Xenotime", "Weathering Assemblage")
@@ -136,6 +143,7 @@ TIMA_DX = 1919
 TIMA_DY = 1051
 TIMA_LEGEND_TRIM_ROWS = 1000
 TIMA_COLOR_DISTANCE_MAX = 50.0
+TIMA_DECODE_CHUNK_PX = 8_000_000
 TIMA_ACHROMATIC_RANGE = 30
 TIMA_ACHROMATIC_MIN = 20
 
