@@ -14,6 +14,10 @@ def test_pyroxene_numbers_and_figure(synth_h5, synth_eds, tmp_path):
         assert nums["gmm_mean"] == {"Augite": 0.53, "Pigeonite": 0.31}
         assert nums["ratio_mean"]["Augite"] == pytest.approx(0.6, abs=0.03)
         assert nums["ratio_mean"]["Pigeonite"] == pytest.approx(0.2, abs=0.03)
+        n1 = nums["n_pixels_1x"]
+        assert nums["pct_1x"]["Augite"] == pytest.approx(100.0 * n1["Augite"] / sum(n1.values()))
+        assert nums["pct_1x"]["Augite"] == pytest.approx(100 * 960 / 1916)
+    assert sum(nums["pct_1x"].values()) == pytest.approx(100.0)
     N.validate("pyroxene", nums)
     assert (tmp_path / "figures" / "fig7_pyroxene_refinement.pdf").exists()
     assert (tmp_path / "figures" / "fig7_pyroxene_refinement.png").exists()
@@ -44,7 +48,7 @@ def test_cli_pyroxene(synth_h5, synth_eds, tmp_path):
     assert (out / "numbers" / "pyroxene.json").exists()
 
 
-def test_cli_pyroxene_skips_without_eds(synth_h5, tmp_path, capsys):
+def test_cli_pyroxene_without_eds_exits_2(synth_h5, tmp_path, capsys):
     args = ["pyroxene", "--h5", str(synth_h5), "--out", str(tmp_path), "--data", str(tmp_path / "none")]
-    assert cli.main(args) == 0
-    assert "pyroxene: skipped" in capsys.readouterr().out
+    assert cli.main(args) == 2
+    assert "elemental PNG directory" in capsys.readouterr().err

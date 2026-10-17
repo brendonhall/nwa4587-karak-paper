@@ -189,12 +189,11 @@ def run(run: Run, out: Path, data: DataPaths) -> dict:
     labs = {HIGH_KEY: run.phase(HIGH_KEY), LOW_KEY: run.phase(LOW_KEY)}
     n2 = sum(run.counts[lab] for lab in labs.values())
     n1 = {k: int(rec["n_pixels_hires"][str(lab)]) for k, lab in labs.items()}
-    area_1x = run.n_mineral_pixels * run.geometry.ratio ** 2
     return {
         "n_pixels_2x": int(n2),
         "pct_of_mineral_2x": 100.0 * n2 / run.n_mineral_pixels,
         "n_pixels_1x": n1,
-        "pct_1x": {k: 100.0 * n / area_1x for k, n in n1.items()},
+        "pct_1x": {k: 100.0 * n / sum(n1.values()) for k, n in n1.items()},
         "gmm_mean": {k: float(next(iter(rec["component_means"][str(lab)].values())))
                      for k, lab in labs.items()},
         "ratio_mean": {HIGH_KEY: float(d["ratio_aug"].mean()), LOW_KEY: float(d["ratio_pig"].mean())},
