@@ -1,0 +1,220 @@
+{
+ "attrs": {
+  "/": [
+   "created",
+   "library_versions",
+   "pipeline_config",
+   "pipeline_version",
+   "platform",
+   "python_version"
+  ],
+  "bse": [
+   "downsample_factor",
+   "original_shape",
+   "stored_shape"
+  ],
+  "bse/image": [],
+  "clusters": [
+   "cluster_0_name",
+   "cluster_10_name",
+   "cluster_11_name",
+   "cluster_12_name",
+   "cluster_13_name",
+   "cluster_14_name",
+   "cluster_15_name",
+   "cluster_16_name",
+   "cluster_1_name",
+   "cluster_3_name",
+   "cluster_4_name",
+   "cluster_5_name",
+   "cluster_6_name",
+   "cluster_8_name",
+   "cluster_9_name",
+   "cluster_config",
+   "cluster_stats",
+   "clustering_strategy",
+   "mineral_names",
+   "n_clusters",
+   "n_mineral_pixels",
+   "n_noise",
+   "n_pca_components_used",
+   "noise_pct"
+  ],
+  "clusters/cleaned_labels": [],
+  "clusters/hires": [],
+  "clusters/hires/labels": [
+   "downsample_factor",
+   "header_trim_px",
+   "left_trim_px",
+   "names",
+   "ratio"
+  ],
+  "clusters/mineral_indices": [],
+  "clusters/pca_variance_ratio": [],
+  "clusters/probabilities": [],
+  "clusters/raw_labels": [],
+  "clusters/subclustering": [
+   "history",
+   "split_00",
+   "split_01",
+   "split_02",
+   "split_03"
+  ],
+  "clusters/tiled": [
+   "n_major_phases",
+   "n_phases",
+   "n_rare_phases",
+   "n_tiles"
+  ],
+  "clusters/tiled/phase_discovered_in_tile": [],
+  "clusters/tiled/phase_fingerprints": [],
+  "clusters/tiled/phase_ids": [],
+  "clusters/tiled/phase_n_pixels": [],
+  "clusters/tiled/tile_deferred": [],
+  "clusters/tiled/tile_ids": [],
+  "clusters/tiled/tile_n_clusters": [],
+  "clusters/tiled/tile_n_new_phases": [],
+  "clusters/tiled/tile_n_noise": [],
+  "clusters/tiled/tile_n_pixels": [],
+  "denoised": [
+   "element_order",
+   "method",
+   "sigma_color",
+   "sigma_spatial"
+  ],
+  "denoised/cube": [],
+  "masks": [
+   "coverage_of_valid_pct",
+   "coverage_pct",
+   "mask_config",
+   "n_connected_components",
+   "n_mineral_pixels",
+   "n_total_pixels",
+   "n_valid_pixels"
+  ],
+  "masks/mineral": [],
+  "masks/valid": [],
+  "normalized": [
+   "element_order",
+   "method",
+   "n_elements"
+  ],
+  "normalized/cube": [],
+  "normalized/means": [],
+  "normalized/stds": [],
+  "raw": [
+   "element_names",
+   "height",
+   "n_elements",
+   "width"
+  ],
+  "raw/Ca": [],
+  "raw/Mg": []
+ },
+ "datasets": {
+  "bse/image": {
+   "dtype": "float32",
+   "ndim": 2
+  },
+  "clusters/cleaned_labels": {
+   "dtype": "int32",
+   "ndim": 1
+  },
+  "clusters/hires/labels": {
+   "dtype": "int16",
+   "ndim": 2
+  },
+  "clusters/mineral_indices": {
+   "dtype": "int32",
+   "ndim": 2
+  },
+  "clusters/pca_variance_ratio": {
+   "dtype": "float64",
+   "ndim": 1
+  },
+  "clusters/probabilities": {
+   "dtype": "float32",
+   "ndim": 1
+  },
+  "clusters/raw_labels": {
+   "dtype": "int32",
+   "ndim": 1
+  },
+  "clusters/tiled/phase_discovered_in_tile": {
+   "dtype": "int32",
+   "ndim": 1
+  },
+  "clusters/tiled/phase_fingerprints": {
+   "dtype": "float32",
+   "ndim": 2
+  },
+  "clusters/tiled/phase_ids": {
+   "dtype": "int32",
+   "ndim": 1
+  },
+  "clusters/tiled/phase_n_pixels": {
+   "dtype": "int32",
+   "ndim": 1
+  },
+  "clusters/tiled/tile_deferred": {
+   "dtype": "bool",
+   "ndim": 1
+  },
+  "clusters/tiled/tile_ids": {
+   "dtype": "int32",
+   "ndim": 1
+  },
+  "clusters/tiled/tile_n_clusters": {
+   "dtype": "int32",
+   "ndim": 1
+  },
+  "clusters/tiled/tile_n_new_phases": {
+   "dtype": "int32",
+   "ndim": 1
+  },
+  "clusters/tiled/tile_n_noise": {
+   "dtype": "int32",
+   "ndim": 1
+  },
+  "clusters/tiled/tile_n_pixels": {
+   "dtype": "int32",
+   "ndim": 1
+  },
+  "denoised/cube": {
+   "dtype": "float32",
+   "ndim": 3
+  },
+  "masks/mineral": {
+   "dtype": "bool",
+   "ndim": 2
+  },
+  "masks/valid": {
+   "dtype": "bool",
+   "ndim": 2
+  },
+  "normalized/cube": {
+   "dtype": "float32",
+   "ndim": 3
+  },
+  "normalized/means": {
+   "dtype": "float32",
+   "ndim": 1
+  },
+  "normalized/stds": {
+   "dtype": "float32",
+   "ndim": 1
+  },
+  "raw/Ca": {
+   "dtype": "float32",
+   "ndim": 2
+  },
+  "raw/Mg": {
+   "dtype": "float32",
+   "ndim": 2
+  }
+ },
+ "optional_groups": [
+  "normalized",
+  "clusters/tiled"
+ ]
+}

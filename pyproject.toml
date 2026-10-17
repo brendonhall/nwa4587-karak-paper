@@ -1,0 +1,38 @@
+[project]
+name = "nwa4587-paper"
+version = "0.1.0"
+description = "Regenerates the figures, tables and numbers of the NWA 4587 karak paper"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.12"
+dependencies = [
+  "karak",
+  "numpy>=2.0",
+  "scipy>=1.14",
+  "scikit-image>=0.26",
+  "scikit-learn>=1.6",
+  "h5py>=3.12",
+  "pyyaml>=6.0",
+  "matplotlib>=3.9",
+  "pillow>=10.0",
+  "imageio>=2.35",
+]
+
+[project.scripts]
+paper = "nwa4587_paper.cli:main"
+
+[tool.uv.sources]
+karak = { git = "https://github.com/brendonhall/karak.git", rev = "7ccd7a7" }
+
+[dependency-groups]
+dev = ["pytest>=8.0"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/nwa4587_paper"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
