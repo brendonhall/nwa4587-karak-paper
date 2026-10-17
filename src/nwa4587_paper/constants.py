@@ -263,3 +263,6 @@ TABLE3_ROWS: tuple[tuple[str, str, str], ...] = (
     ("Zn-bearing Phase", "---", "Not detected by TIMA"),
     ("Fe Oxyhydroxide", "Hematite/Magnetite?", "Uncertain"),
 )
+RARE_BACKGROUND_NAME = "Background"
+RARE_COMBINED_PYROXENE_NAME = "Pyroxene (combined)"
+RARE_TOP_N = 5
