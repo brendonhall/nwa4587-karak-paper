@@ -69,3 +69,15 @@ def test_figures_runs_present_stages(synth_h5, tmp_path):
 def test_console_script_runs():
     out = subprocess.run([sys.executable, "-m", "nwa4587_paper.cli", "--help"], capture_output=True, text=True)
     assert out.returncode == 0 and "tables" in out.stdout
+
+
+def test_figures_then_numbers_on_synthetic(tmp_path):
+    assert cli.main(["synth", str(tmp_path)]) == 0
+    common = ["--h5", str(tmp_path / "results" / "paperflow.h5"), "--out", str(tmp_path / "results"),
+              "--data", str(tmp_path / "data")]
+    assert cli.main(["figures", *common]) == 0
+    assert cli.main(["numbers", *common]) == 0
+    merged = json.loads((tmp_path / "results" / "numbers.json").read_text())
+    assert {"tables", "fingerprints"} <= set(merged)
+    tex = (tmp_path / "results" / "numbers.tex").read_text()
+    assert r"\nwaTablesNMineralPixels" in tex
