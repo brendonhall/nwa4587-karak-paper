@@ -164,8 +164,10 @@ def write_synthetic_h5(path: Path) -> Path:
             "clustering_strategy": "tiled", "n_clusters": len(counts), "n_mineral_pixels": int(labels.size),
             "n_noise": 0, "n_pca_components_used": 3, "noise_pct": 0.0,
         })
+        replaced = {rec["parent"] for rec in history}     # the real file has no name attr for replaced parents
         for k, v in SYNTH_NAMES.items():     # the real file stores one attribute per palette entry
-            c.attrs[f"cluster_{k}_name"] = v
+            if k not in replaced:
+                c.attrs[f"cluster_{k}_name"] = v
         c.create_dataset("cleaned_labels", data=labels)
         c.create_dataset("raw_labels", data=labels)
         c.create_dataset("probabilities", data=np.ones(labels.size, np.float32))

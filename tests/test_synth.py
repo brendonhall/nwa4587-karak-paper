@@ -52,6 +52,19 @@ def test_final_labels_have_no_parent_labels():
     assert 2 not in img and 7 not in img
 
 
+def test_single_undefined_pixel():
+    img, mask, _, _ = synth.final_labels()
+    assert ((img == -1) & mask).sum() == 1
+    assert img[30, 6] == -1
+
+
+def test_no_name_attrs_for_replaced_parents(synth_h5):
+    with h5py.File(synth_h5, "r") as f:
+        attrs = f["clusters"].attrs
+        assert "cluster_2_name" not in attrs and "cluster_7_name" not in attrs
+        assert "cluster_14_name" in attrs
+
+
 def test_synthetic_pngs_and_tima(synth_eds, synth_tima):
     with Image.open(synth_eds / "SYN-Ca.png") as im:
         ca = np.asarray(im)
@@ -66,6 +79,8 @@ def test_png16_round_trip(tmp_path):
     rgb8 = rng.integers(0, 256, (7, 5, 3)).astype(np.uint16)
     rgb16 = rgb8 * 257
     path = synth.write_png16_rgb(tmp_path / "x.png", rgb16)
+    header = path.read_bytes()
+    assert header[24] == 16 and header[25] == 2          # IHDR bit depth and colour type
     back = iio.imread(path)
     assert back.shape == (7, 5, 3)
     expected = np.rint(rgb16 / 257)
