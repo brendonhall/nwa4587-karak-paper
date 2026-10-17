@@ -163,8 +163,8 @@ class Run:
         up = np.repeat(np.repeat(self.labels, r, 0), r, 1)
         h, w = self.hires_labels.shape
         out = up[:h, :w].astype(np.int16)
-        if self.has("Epoxy"):
-            out[out == self.phase("Epoxy")] = -1
+        if self.has(C.EPOXY_KEY):
+            out[out == self.phase(C.EPOXY_KEY)] = -1
         defined = self.hires_labels >= 0
         out[defined] = self.hires_labels[defined]
         return out

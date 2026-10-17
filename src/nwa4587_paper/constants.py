@@ -10,6 +10,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import NamedTuple
 
+EPOXY_KEY = "Epoxy"
+
 # ----- palette (poster/make_phase_map_1x.py L39-58) -----
 PALETTE: dict[str, str] = {
     "Ilmenite": "#8B4513",
@@ -208,6 +210,11 @@ COLORMAP = ColormapSettings()
 
 RARE_PHASE_THRESHOLD_PX = 500_000
 FINGERPRINT_EXCLUDED_KEYS: tuple[str, ...] = ("Epoxy", "Weathering Assemblage")
+
+# ----- Fig 2 -----
+FIG2_BAR_COLOR = "#4878a8"
+FIG2_BAR_EDGE_COLOR = "#345a80"
+FIG2_ERROR_COLOR = "#444444"
 
 # ----- Table 1: flow node params shown (label, node id, param, format) -----
 TABLE1_ROWS: tuple[tuple[str, str, str, str], ...] = (

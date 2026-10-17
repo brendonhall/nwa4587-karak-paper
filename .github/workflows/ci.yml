@@ -11,4 +11,29 @@ jobs:
       - uses: astral-sh/setup-uv@v5
       - run: uv python install 3.12
       - run: uv sync --group dev
+      - uses: actions/cache@v4
+        with:
+          path: .venv/lib/python3.*/.cache
+          key: ${{ runner.os }}-karak-lut-${{ hashFiles('uv.lock') }}
       - run: uv run pytest -q
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv python install 3.12
+      - run: uv sync
+      - uses: actions/cache@v4
+        with:
+          path: .venv/lib/python3.*/.cache
+          key: ${{ runner.os }}-karak-lut-${{ hashFiles('uv.lock') }}
+      - run: uv run paper synth smoke
+      - run: uv run paper figures --h5 smoke/results/paperflow.h5 --out smoke/results --data smoke/data
+      - run: uv run paper numbers --h5 smoke/results/paperflow.h5 --out smoke/results --data smoke/data
+      - name: Check outputs
+        run: |
+          test -s smoke/results/numbers.tex
+          test -s smoke/results/figures/fig2_fingerprints.pdf
+          test -s smoke/results/tables/table1_params.tex
+          test -s smoke/results/tables/table2_phases.csv
+          test -s smoke/results/tables/table2_phases.tex
