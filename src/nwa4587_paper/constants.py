@@ -266,3 +266,22 @@ TABLE3_ROWS: tuple[tuple[str, str, str], ...] = (
 RARE_BACKGROUND_NAME = "Background"
 RARE_COMBINED_PYROXENE_NAME = "Pyroxene (combined)"
 RARE_TOP_N = 5
+
+# ----- Figs 3 to 5 text and neutral colours (make_fig3_fig4.py, tima_pyroxene_zoom.py) -----
+FIG3_TITLE_A = "(a) Pipeline"
+FIG3_TITLE_B = "(b) TIMA (aligned)"
+FIG3_BACKGROUND_LABEL = "Background / excluded"
+FIG4_TITLE_B = "(b) Per-phase breakdown"
+FIG4_EXCLUDED_LABEL = "Excluded"
+FIG4_ANNOTATION = "Overall agreement"
+FIG5_TITLE_A = "(a) Pipeline (unsupervised)"
+FIG5_TITLE_B = "(b) TIMA"
+FIG5_LEGEND_LABELS: tuple[str, str, str] = (
+    "Augite / pyroxene high-Ca", "Pigeonite / pyroxene low-Ca", "Other phase / background")
+FIG5_KARAK_HIGH_KEY = "Augite"
+FIG5_KARAK_LOW_KEY = "Pigeonite"
+FIG5_TIMA_HIGH = 2
+FIG5_TIMA_LOW = 1
+FIG_LEGEND_EDGE_COLOR = "0.7"
+FIG_LABEL_GREY = "0.3"
+FIG_BOX_COLOR = "white"
