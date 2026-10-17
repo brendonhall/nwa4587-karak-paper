@@ -188,6 +188,7 @@ FIG5_WINDOW_SIZE = 520
 FIG5_WINDOW_STRIDE = 100
 FIG5_WINDOW_XY: tuple[int, int] | None = None   # None: search and record; Task 6.2 freezes it
 XENOTIME_PAD_PX_2X = 80
+XENOTIME_CONTOUR_COLOR = "#FFD700"      # the xenotime outline on the BSE panel
 FIG7_SUBSAMPLE_N = 80_000
 FIG7_SUBSAMPLE_SEED = 42
 FIG1_PNG_STRIDE = 16

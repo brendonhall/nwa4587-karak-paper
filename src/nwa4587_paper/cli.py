@@ -17,12 +17,13 @@ NEEDS_RUN = {"colormap": False}
 
 def _import_stages() -> None:
     """Each stage module is imported explicitly; later tasks add theirs here."""
-    from . import fingerprints, pyroxene, tables, tima
+    from . import fingerprints, pyroxene, tables, tima, xenotime
 
     STAGES.setdefault("tables", tables.run)
     STAGES.setdefault("fingerprints", fingerprints.run)
     STAGES.setdefault("tima", tima.run)
     STAGES.setdefault("pyroxene", pyroxene.run)
+    STAGES.setdefault("xenotime", xenotime.run)
 
 
 def data_paths(data_dir: Path) -> DataPaths:
