@@ -28,7 +28,8 @@ jobs:
           path: .venv/lib/python3.*/.cache
           key: ${{ runner.os }}-karak-lut-${{ hashFiles('uv.lock') }}
       - run: uv run paper synth smoke
-      - run: uv run paper figures --h5 smoke/results/paperflow.h5 --out smoke/results --data smoke/data
+      # 19,51 is synth.SYNTH_TIMA_DX/DY
+      - run: uv run paper figures --h5 smoke/results/paperflow.h5 --out smoke/results --data smoke/data --tima-offset 19,51
       - run: uv run paper numbers --h5 smoke/results/paperflow.h5 --out smoke/results --data smoke/data
       - name: Check outputs
         run: |
@@ -37,3 +38,9 @@ jobs:
           test -s smoke/results/tables/table1_params.tex
           test -s smoke/results/tables/table2_phases.csv
           test -s smoke/results/tables/table2_phases.tex
+          test -s smoke/results/figures/fig3_phase_comparison.pdf
+          test -s smoke/results/figures/fig4_agreement_map.pdf
+          test -s smoke/results/figures/fig5_pyroxene_tima.pdf
+          test -s smoke/results/tables/table3_correspondence.tex
+          test -s smoke/results/tables/table4_concordance.tex
+          test -s smoke/results/tables/table4_concordance.csv

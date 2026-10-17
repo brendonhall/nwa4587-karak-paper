@@ -2,7 +2,7 @@ import json
 import subprocess
 import sys
 
-from nwa4587_paper import cli
+from nwa4587_paper import cli, synth
 
 
 def test_tables_subcommand_writes_numbers(synth_h5, tmp_path):
@@ -75,9 +75,41 @@ def test_figures_then_numbers_on_synthetic(tmp_path):
     assert cli.main(["synth", str(tmp_path)]) == 0
     common = ["--h5", str(tmp_path / "results" / "paperflow.h5"), "--out", str(tmp_path / "results"),
               "--data", str(tmp_path / "data")]
-    assert cli.main(["figures", *common]) == 0
+    offset = ["--tima-offset", f"{synth.SYNTH_TIMA_DX},{synth.SYNTH_TIMA_DY}"]
+    assert cli.main(["figures", *common, *offset]) == 0
     assert cli.main(["numbers", *common]) == 0
     merged = json.loads((tmp_path / "results" / "numbers.json").read_text())
-    assert {"tables", "fingerprints"} <= set(merged)
+    assert {"tables", "fingerprints", "tima"} <= set(merged)
     tex = (tmp_path / "results" / "numbers.tex").read_text()
     assert r"\nwaTablesNMineralPixels" in tex
+
+
+def test_missing_tima_raster_skips_with_exit_0(synth_h5, tmp_path, capsys):
+    common = ["--h5", str(synth_h5), "--out", str(tmp_path), "--data", str(tmp_path / "nodata")]
+    assert cli.main(["tima", *common]) == 0
+    assert "tima: skipped (no TIMA raster under data/tima)" in capsys.readouterr().out
+    assert not (tmp_path / "numbers" / "tima.json").exists()
+    assert cli.main(["figures", *common]) == 0
+    assert "tima: skipped" in capsys.readouterr().out
+
+
+def test_tima_offset_option_reaches_stage(synth_h5, synth_tima, tmp_path, monkeypatch):
+    seen = {}
+
+    def fake(run, out, data, **kw):
+        seen.update(kw)
+        return {}
+
+    monkeypatch.setitem(cli.STAGES, "tima", fake)
+    data = tmp_path / "data"
+    (data / "tima").mkdir(parents=True)
+    (data / "tima" / "phases.png").write_bytes(synth_tima.read_bytes())
+    args = ["tima", "--h5", str(synth_h5), "--out", str(tmp_path), "--data", str(data)]
+    assert cli.main(args) == 0 and seen == {}
+    assert cli.main([*args, "--tima-offset", "19,51"]) == 0
+    assert seen == {"dx": 19, "dy": 51}
+
+
+def test_synth_prints_offset_hint(tmp_path, capsys):
+    cli.main(["synth", str(tmp_path)])
+    assert "use: --tima-offset 19,51" in capsys.readouterr().out
