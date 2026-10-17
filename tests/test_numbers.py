@@ -87,3 +87,33 @@ def test_check_missing_key(reg):
 def test_check_nan_equals_nan(reg):
     reg({"demo.f": N.Spec("float", tol=0.01)})
     assert N.check({"demo": {"f": math.nan}}, {"demo": {"f": math.nan}}) == []
+
+
+def test_wildcard_matches_per_segment(reg):
+    reg({"demo.phases.*.pct": N.Spec("float")})
+    N.spec_for("demo.phases.A.pct")
+    for bad in ("demo.phases.A.B.pct", "demo.phases.pct"):
+        with pytest.raises(KeyError):
+            N.spec_for(bad)
+    with pytest.raises(KeyError):
+        N.validate("demo", {"phases": {"A": {"B": {"pct": 1.0}}}})
+
+
+def test_most_specific_wildcard_wins(reg):
+    generic = N.Spec("float", tol=1.0)
+    specific = N.Spec("float", tol=0.1)
+    for order in ((("demo.*.pct", generic), ("demo.A.pct", specific)),
+                  (("demo.A.pct", specific), ("demo.*.pct", generic))):
+        for key, spec in order:
+            reg({key: spec})
+        assert N.spec_for("demo.A.pct") is specific
+        assert N.spec_for("demo.B.pct") is generic
+    reg({"demo.*.*": N.Spec("float", tol=2.0), "demo.*.pct": generic})
+    assert N.spec_for("demo.B.pct") is generic
+
+
+def test_equally_specific_wildcards_are_an_error(reg):
+    reg({"demo.*.pct": N.Spec("float"), "demo.A.*": N.Spec("float", tol=1.0)})
+    with pytest.raises(ValueError) as e:
+        N.spec_for("demo.A.pct")
+    assert "demo.*.pct" in str(e.value) and "demo.A.*" in str(e.value)

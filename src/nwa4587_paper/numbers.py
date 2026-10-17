@@ -38,13 +38,25 @@ def flatten(d: dict, prefix: str = "") -> dict[str, object]:
     return out
 
 
+def _segments_match(pattern: str, key: str) -> bool:
+    """`*` stays inside one dot-separated segment: same segment count, fnmatch per segment."""
+    ps, ks = pattern.split("."), key.split(".")
+    return len(ps) == len(ks) and all(fnmatch.fnmatchcase(k, p) for p, k in zip(ps, ks))
+
+
 def spec_for(key: str) -> Spec:
+    """Exact key first; else the matching pattern with the fewest wildcard segments.
+    Two equally specific matches raise ValueError naming both."""
     if key in REGISTRY:
         return REGISTRY[key]
-    for pattern, spec in REGISTRY.items():
-        if "*" in pattern and fnmatch.fnmatchcase(key, pattern):
-            return spec
-    raise KeyError(key)
+    hits = [(sum("*" in seg for seg in pat.split(".")), pat)
+            for pat in REGISTRY if "*" in pat and _segments_match(pat, key)]
+    if not hits:
+        raise KeyError(key)
+    hits.sort()
+    if len(hits) > 1 and hits[0][0] == hits[1][0]:
+        raise ValueError(f"{key!r} matches {hits[0][1]!r} and {hits[1][1]!r} equally")
+    return REGISTRY[hits[0][1]]
 
 
 def validate(stage: str, numbers: dict) -> None:
