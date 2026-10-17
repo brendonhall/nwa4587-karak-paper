@@ -67,3 +67,12 @@ def test_combine_and_mapping(synth_h5):
         ek, et = T.exclusions(run, "split")
         assert ek == {-1, run.phase("Xenotime"), run.phase("Weathering Assemblage")}
         assert et == {-1, 5, 9, 10, 11, 12}
+
+
+def test_read_rgb8_16bit_keeps_high_byte(tmp_path):
+    vals = np.array([255, 383, 32996, 33026, 65535], np.uint16)
+    rgb16 = np.repeat(vals[None, :, None], 3, axis=2)
+    p = synth.write_png16_rgb(tmp_path / "hb.png", rgb16)
+    out = T.read_rgb8(p)
+    assert out.dtype == np.uint8
+    assert list(out[0, :, 0]) == [0, 1, 128, 129, 255]

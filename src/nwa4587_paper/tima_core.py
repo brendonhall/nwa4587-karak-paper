@@ -14,7 +14,11 @@ _TIMA_RGB = np.array([p.rgb for p in C.TIMA_PHASES], dtype=np.float32)
 
 
 def read_rgb8(png: Path) -> np.ndarray:
-    """RGB uint8 (H, W, 3) from an 8-bit or 16-bit PNG."""
+    """RGB uint8 (H, W, 3) from an 8-bit or 16-bit PNG.
+
+A 16-bit RGB PNG is read through Pillow, which keeps the high byte (v >> 8).
+This matches the old script's Image.convert("RGB").
+"""
     import imageio.v3 as iio
 
     arr = iio.imread(png)
@@ -22,7 +26,8 @@ def read_rgb8(png: Path) -> np.ndarray:
         arr = np.repeat(arr[:, :, None], 3, 2)
     arr = arr[:, :, :3]
     if arr.dtype == np.uint16:
-        arr = np.rint(arr.astype(np.float32) / 257.0).astype(np.uint8)
+        # Runs only when a reader returns uint16 (for example 16-bit greyscale).
+        arr = (arr >> 8).astype(np.uint8)
     return np.ascontiguousarray(arr.astype(np.uint8))
 
 
