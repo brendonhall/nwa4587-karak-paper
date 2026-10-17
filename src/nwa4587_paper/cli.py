@@ -13,15 +13,17 @@ from .io import DataPaths, MissingInput, MissingPhase, Run
 STAGES: dict[str, Callable] = {}
 STAGE_ORDER = ["tables", "fingerprints", "tima", "pyroxene", "xenotime", "lamellae", "colormap", "workflow"]
 NEEDS_RUN = {"colormap": False}
+NEEDS_EDS = {"pyroxene"}   # skipped like tima when the 1x PNGs are absent
 
 
 def _import_stages() -> None:
     """Each stage module is imported explicitly; later tasks add theirs here."""
-    from . import fingerprints, tables, tima
+    from . import fingerprints, pyroxene, tables, tima
 
     STAGES.setdefault("tables", tables.run)
     STAGES.setdefault("fingerprints", fingerprints.run)
     STAGES.setdefault("tima", tima.run)
+    STAGES.setdefault("pyroxene", pyroxene.run)
 
 
 def data_paths(data_dir: Path) -> DataPaths:
@@ -57,6 +59,9 @@ def run_stage(name: str, args, **stage_kwargs) -> int:
         if offset:
             dx, dy = (int(v) for v in offset.split(","))
             stage_kwargs = {**stage_kwargs, "dx": dx, "dy": dy}
+    if name in NEEDS_EDS and data.eds_dir is None:
+        print(f"{name}: skipped (no elemental PNGs under data/eds)")
+        return 0
     try:
         if NEEDS_RUN.get(name, True):
             with Run.open(args.h5) as run:

@@ -33,6 +33,8 @@ PALETTE: dict[str, str] = {
     "Pyroxene": "#666666",         # unresolved pyroxene, pre-split panels
 }
 UNASSIGNED_COLOR = "#000000"
+PALETTE_FALLBACK_COLOR = (0.85, 0.85, 0.85)   # a label with no palette entry
+BSE_DISPLAY_MAX = 0.5   # BSE intensity shown as white
 OVERLAY_ALPHA = 0.55   # the Fig 7 BSE overlay alpha
 PYROXENE_UNDIFF_COLOR = "#66C266"   # Fig 7 panel (a)
 NYQUIST_COLOR = "#CC3333"
