@@ -10,6 +10,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import NamedTuple
 
+EPOXY_KEY = "Epoxy"
+
 # ----- palette (poster/make_phase_map_1x.py L39-58) -----
 PALETTE: dict[str, str] = {
     "Ilmenite": "#8B4513",
