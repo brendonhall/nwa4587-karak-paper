@@ -18,8 +18,8 @@ def synth_tima(tmp_path_factory):
     return synth.write_synthetic_tima(tmp_path_factory.mktemp("tima") / "phases.png")
 
 
-@pytest.fixture(autouse=True)
-def _small_colormap(monkeypatch):
+@pytest.fixture
+def small_colormap(monkeypatch):
     """`paper figures` also runs the colormap stage; keep its default 3-minute LUT build out of the tests."""
     from nwa4587_paper import constants as C
 

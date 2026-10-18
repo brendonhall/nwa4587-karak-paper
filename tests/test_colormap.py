@@ -21,8 +21,7 @@ def test_regions_come_from_constants():
     ]
 
 
-def test_cli_colormap_writes_numbers(tmp_path, monkeypatch):
-    monkeypatch.setattr(C, "COLORMAP", C.ColormapSettings(lut_n=256, n_test=500, cmaps=("jet",)))
+def test_cli_colormap_writes_numbers(tmp_path, small_colormap):
     assert cli.main(["colormap", "--out", str(tmp_path)]) == 0
     data = json.loads((tmp_path / "numbers" / "colormap.json").read_text())
     assert "jet" in data and "lut_step" in data
@@ -36,3 +35,18 @@ def test_lut_matches_karak_on_samples():
     rng = np.random.default_rng(0)
     idx = rng.integers(0, 256, size=(1000, 3))
     assert np.allclose(ours[idx[:, 0], idx[:, 1], idx[:, 2]], theirs[idx[:, 0], idx[:, 1], idx[:, 2]], atol=1e-6)
+
+
+def test_n_exact_counts_zero_error_only():
+    lut = CM.build_lut("jet", 256)
+    res = CM.analyse("jet", 256, lut)
+    s = np.linspace(0, 1, 256)
+    expected = int((np.abs(CM.invert_via_lut(CM.forward_map(s, "jet"), lut).astype(np.float64) - s) == 0).sum())
+    assert res["n_exact"] == expected and expected <= 2
+
+
+def test_n_unique_rgb_uses_the_palette_grid():
+    settings = C.ColormapSettings(lut_n=256, n_test=50, cmaps=("jet",))
+    nums = CM.run(None, None, None, settings=settings)
+    palette = CM.forward_map(np.linspace(0, 1, 256), "jet")
+    assert nums["jet"]["n_unique_rgb"] == len(np.unique(palette, axis=0)) > 50

@@ -48,7 +48,10 @@ def classify_jet_region(scalar: float) -> str:
     return C.COLORMAP_REGION_BOUNDS[-1][1]
 
 
-def analyse(cmap_name: str, n_test: int, lut: np.ndarray) -> dict:
+def analyse(cmap_name: str, n_test: int, lut: np.ndarray, lut_n: int | None = None) -> dict:
+    """Round-trip error on an n_test grid. n_exact counts errors equal to 0.
+    n_unique_rgb counts the distinct colours of the palette grid (one per LUT entry), not of the test grid."""
+    lut_n = n_test if lut_n is None else lut_n
     scalars = np.linspace(0, 1, n_test)
     rgb = forward_map(scalars, cmap_name)
     ae = np.abs(invert_via_lut(rgb, lut).astype(np.float64) - scalars)
@@ -59,8 +62,8 @@ def analyse(cmap_name: str, n_test: int, lut: np.ndarray) -> dict:
         "rmse": float(np.sqrt((ae ** 2).mean())),
         "p90": float(np.percentile(ae, 90)),
         "p99": float(np.percentile(ae, 99)),
-        "n_exact": int((ae < 1e-6).sum()),
-        "n_unique_rgb": int(len(np.unique(rgb, axis=0))),
+        "n_exact": int((ae == 0).sum()),
+        "n_unique_rgb": int(len(np.unique(forward_map(np.linspace(0, 1, lut_n), cmap_name), axis=0))),
     }
     if cmap_name == "jet":
         names = np.array([classify_jet_region(v) for v in scalars])
@@ -75,11 +78,11 @@ def analyse(cmap_name: str, n_test: int, lut: np.ndarray) -> dict:
 
 def run(run, out, data, *, settings: C.ColormapSettings | None = None) -> dict:
     """`run`, `out` and `data` are unused; the CLI writes numbers/colormap.json."""
-    settings = settings or C.COLORMAP
+    settings = settings if settings is not None else C.COLORMAP
     nums: dict = {}
     for name in settings.cmaps:
         lut = build_lut(name, settings.lut_n)
-        res = analyse(name, settings.n_test, lut)
+        res = analyse(name, settings.n_test, lut, settings.lut_n)
         regions = res.pop("_regions", None)
         nums[name] = res
         if regions is not None:
