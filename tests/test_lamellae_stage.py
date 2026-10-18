@@ -5,6 +5,7 @@ import math
 import shutil
 
 import h5py
+import matplotlib.pyplot as plt
 import numpy as np
 import pytest
 
@@ -62,13 +63,15 @@ def test_stage_lowered_threshold_analyzes_a_grain(diagonal_h5, tmp_path):
     assert "bbox" not in rows[0] and "spacing_um" in rows[0]
 
 
-def test_figure_follows_the_source(diagonal_h5, tmp_path, monkeypatch):
+def test_figure_follows_the_source(diagonal_h5, tmp_path, monkeypatch, request):
     figs = []
     monkeypatch.setattr(lamellae.plt, "close", lambda fig: figs.append(fig))
     settings = dataclasses.replace(C.LAMELLAE, min_analysis_px=500)
     with Run.open(diagonal_h5) as run:
         lamellae.run(run, tmp_path, DataPaths(), settings=settings)
     fig = figs[0]
+    monkeypatch.undo()                  # lamellae.plt is pyplot itself
+    request.addfinalizer(lambda: plt.close(fig))
     a, c = fig.axes[0], fig.axes[2]
     rose = [ax for ax in fig.axes if ax.name == "polar"][0]
     d = [ax for ax in fig.axes if ax.get_xlabel() == "Grain area (µm²)"]
