@@ -81,6 +81,20 @@ class Run:
     def keys(self) -> dict[int, str]:
         return {k: phase_key(v) for k, v in self.names.items()}
 
+    def keys_before(self, node_id: str) -> dict[int, str]:
+        """`keys` plus the parent label of every split that `labels_before(node_id)` undoes.
+        The parent keys come from the flow's `names` node."""
+        start = self.split_node_ids.index(node_id)
+        parents = {int(rec["parent"]) for rec in self.history[start:]}
+        flow_names: dict[int, str] = {}
+        for item in self.flow_param("names", "names").split(";"):
+            label, _, name = item.partition(":")
+            flow_names[int(label)] = phase_key(name)
+        missing = parents - flow_names.keys()
+        if missing:
+            raise KeyError(f"flow 'names' node has no name for split parents {sorted(missing)}")
+        return {**{lab: flow_names[lab] for lab in parents}, **self.keys}
+
     def phase(self, key: str) -> int:
         for lab, k in self.keys.items():
             if k == key:

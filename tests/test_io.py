@@ -82,3 +82,11 @@ def test_load_channel_1x(synth_eds):
     assert ca.shape == (128, 96) and ca.dtype == np.float32
     assert abs(float(ca[12, 12]) - 0.3) < 0.02                  # plagioclase block
     assert find_png(synth_eds, "SEM").name == "SYN-SEM.png"
+
+
+def test_keys_before_adds_pre_split_parents(synth_h5):
+    with Run.open(synth_h5) as run:
+        kb = run.keys_before("pyx")
+        assert kb[2] == "Pyroxene" and kb[7] == "Apatite"
+        assert all(kb[k] == v for k, v in run.keys.items())
+        assert 2 not in run.keys

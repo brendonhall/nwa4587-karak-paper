@@ -44,3 +44,6 @@ jobs:
           test -s smoke/results/tables/table3_correspondence.tex
           test -s smoke/results/tables/table4_concordance.tex
           test -s smoke/results/tables/table4_concordance.csv
+          test -s smoke/results/figures/fig1_workflow.pdf
+          test -s smoke/results/figures/fig6_xenotime_callout.pdf
+          test -s smoke/results/figures/fig7_pyroxene_refinement.pdf

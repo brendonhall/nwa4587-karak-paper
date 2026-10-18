@@ -33,6 +33,8 @@ PALETTE: dict[str, str] = {
     "Pyroxene": "#666666",         # unresolved pyroxene, pre-split panels
 }
 UNASSIGNED_COLOR = "#000000"
+PALETTE_FALLBACK_COLOR = (0.85, 0.85, 0.85)   # a label with no palette entry
+BSE_DISPLAY_MAX = 0.5   # BSE intensity shown as white
 OVERLAY_ALPHA = 0.55   # the Fig 7 BSE overlay alpha
 PYROXENE_UNDIFF_COLOR = "#66C266"   # Fig 7 panel (a)
 NYQUIST_COLOR = "#CC3333"
@@ -185,12 +187,16 @@ FIG7_CROP_1X = (6061, 6861, 3570, 4370)     # rows r0, r1, cols c0, c1 at 1x
 FIG5_WINDOW_SIZE = 520
 FIG5_WINDOW_STRIDE = 100
 FIG5_WINDOW_XY: tuple[int, int] | None = None   # None: search and record; Task 6.2 freezes it
+XENOTIME_KEY = "Xenotime"
 XENOTIME_PAD_PX_2X = 80
+XENOTIME_CONTOUR_COLOR = "#FFD700"      # the xenotime outline on the BSE panel
 FIG7_SUBSAMPLE_N = 80_000
 FIG7_SUBSAMPLE_SEED = 42
 FIG1_PNG_STRIDE = 16
 FIG1_H5_STRIDE = 8
 FIG1_ELEMENT = "Ca"
+FIG1_ARROW_COLOR = "#444444"
+FIG1_NOTE_COLOR = "#555555"
 
 
 @dataclass(frozen=True)

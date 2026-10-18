@@ -61,8 +61,11 @@ def test_synth_subcommand(tmp_path):
     assert (tmp_path / "data" / "tima" / "phases.png").exists()
 
 
-def test_figures_runs_present_stages(synth_h5, tmp_path):
-    assert cli.main(["figures", "--h5", str(synth_h5), "--out", str(tmp_path)]) == 0
+def test_figures_runs_present_stages(synth_h5, synth_eds, tmp_path):
+    data = tmp_path / "data"
+    data.mkdir()
+    (data / "eds").symlink_to(synth_eds)
+    assert cli.main(["figures", "--h5", str(synth_h5), "--out", str(tmp_path), "--data", str(data)]) == 0
     assert (tmp_path / "numbers" / "tables.json").exists()
 
 
@@ -84,8 +87,11 @@ def test_figures_then_numbers_on_synthetic(tmp_path):
     assert r"\nwaTablesNMineralPixels" in tex
 
 
-def test_missing_tima_raster_skips_with_exit_0(synth_h5, tmp_path, capsys):
-    common = ["--h5", str(synth_h5), "--out", str(tmp_path), "--data", str(tmp_path / "nodata")]
+def test_missing_tima_raster_skips_with_exit_0(synth_h5, synth_eds, tmp_path, capsys):
+    data = tmp_path / "nodata"
+    data.mkdir()
+    (data / "eds").symlink_to(synth_eds)
+    common = ["--h5", str(synth_h5), "--out", str(tmp_path), "--data", str(data)]
     assert cli.main(["tima", *common]) == 0
     assert "tima: skipped (no TIMA raster under data/tima)" in capsys.readouterr().out
     assert not (tmp_path / "numbers" / "tima.json").exists()
@@ -113,3 +119,12 @@ def test_tima_offset_option_reaches_stage(synth_h5, synth_tima, tmp_path, monkey
 def test_synth_prints_offset_hint(tmp_path, capsys):
     cli.main(["synth", str(tmp_path)])
     assert "use: --tima-offset 19,51" in capsys.readouterr().out
+
+
+def test_workflow_subcommand_writes_figure_and_numbers(synth_h5, synth_eds, tmp_path):
+    data = tmp_path / "data"
+    data.mkdir()
+    (data / "eds").symlink_to(synth_eds)
+    assert cli.main(["workflow", "--h5", str(synth_h5), "--out", str(tmp_path), "--data", str(data)]) == 0
+    assert (tmp_path / "figures" / "fig1_workflow.png").exists()
+    assert (tmp_path / "numbers" / "workflow.json").exists()
