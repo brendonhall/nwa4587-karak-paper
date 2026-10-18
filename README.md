@@ -71,6 +71,10 @@ Each stage writes `results/numbers/<stage>.json`. `paper numbers` merges them in
 `paper numbers --check` compares a fresh run with that file. The tolerance for each key
 is in the `REGISTRY` of `src/nwa4587_paper/numbers.py`: counts compare exactly unless a
 spec says otherwise, and floats compare within an absolute or a relative tolerance.
+Each stage deletes its old `results/numbers/<stage>.json` before it runs, so a stage
+that fails leaves no file. `--check` reports every expected stage without a file as a
+miss. The one exception is `tima` when `data/tima` holds no raster: `--check` prints
+`tima: not compared (no TIMA raster)` and goes on.
 
 ## Known differences from the published paper
 

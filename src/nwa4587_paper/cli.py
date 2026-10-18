@@ -68,6 +68,8 @@ def run_stage(name: str, args, **stage_kwargs) -> int:
     fn = STAGES[name]
     out = Path(args.out)
     data = data_paths(Path(args.data))
+    # a stage that fails or skips this run must not leave its old numbers behind
+    (out / "numbers" / f"{name}.json").unlink(missing_ok=True)
     if name == "tima":
         if data.tima_png is None:
             print("tima: skipped (no TIMA raster under data/tima)")
@@ -95,12 +97,32 @@ def run_stage(name: str, args, **stage_kwargs) -> int:
     return 0
 
 
+def _load_expected(expected_path: str) -> dict:
+    return json.loads(require(Path(expected_path), "expected numbers file", "numbers").read_text())
+
+
 def _check(numbers: dict, expected_path: str) -> int:
-    expected = json.loads(require(Path(expected_path), "expected numbers file", "numbers").read_text())
-    expected = {k: v for k, v in expected.items() if k in numbers}
+    """Compare one stage's fresh numbers with its expected entry."""
+    expected = {k: v for k, v in _load_expected(expected_path).items() if k in numbers}
     misses = N.check(numbers, expected)
     print(N.format_misses(misses))
     return 1 if misses else 0
+
+
+def _check_all(merged: dict, expected_path: str, data: DataPaths) -> int:
+    """Compare every stage. An expected stage with no stage file is a miss,
+    except `tima` when no TIMA raster is present."""
+    expected = _load_expected(expected_path)
+    if data.tima_png is None and "tima" in expected:
+        print("tima: not compared (no TIMA raster)")
+        expected.pop("tima")
+        merged = {k: v for k, v in merged.items() if k != "tima"}
+    absent = sorted(set(expected) - set(merged))
+    for stage in absent:
+        print(f"{stage}: no stage file in numbers/ (the stage did not run or failed)")
+    misses = N.check(merged, {k: v for k, v in expected.items() if k in merged})
+    print(N.format_misses(misses))
+    return 1 if misses or absent else 0
 
 
 def cmd_numbers(args) -> int:
@@ -109,7 +131,7 @@ def cmd_numbers(args) -> int:
     (out / "numbers.tex").write_text(N.render_tex(merged))
     print(f"numbers: wrote {out / 'numbers.json'} and numbers.tex")
     if args.check:
-        return _check(merged, args.expected)
+        return _check_all(merged, args.expected, data_paths(Path(args.data)))
     return 0
 
 
