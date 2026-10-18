@@ -46,8 +46,11 @@ def segment_grains(label_1x: np.ndarray, min_size: int, settings: C.LamellaeSett
     grain_labels, n_raw = ndlabel(pyx_closed, structure=struct)
     del pyx_closed
 
-    # Remove small objects (max_size = min_size - 1 keeps objects of size >= min_size)
-    grain_labels = remove_small_objects(grain_labels, max_size=min_size - 1,
+    # Remove objects of size <= min_size. The reference run called
+    # remove_small_objects(min_size=500) under scikit-image 0.26, whose deprecation
+    # wrapper passes the value on as the inclusive max_size=500; an object of exactly
+    # min_size pixels is therefore removed, not kept.
+    grain_labels = remove_small_objects(grain_labels, max_size=min_size,
                                         connectivity=2)
     # Relabel sequentially
     unique = np.unique(grain_labels)

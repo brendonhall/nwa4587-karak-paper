@@ -10,7 +10,9 @@ PR 6 of 6. Base: `feat/lamellae-colormap` (PR 5). PRs 1 to 5 are open; the owner
 - `CITATION.cff`: the repository and the paper as the preferred citation ("in revision, 2026"; the journal reference follows on acceptance). `cffconvert --validate` passes.
 - `docs/acceptance-2026.md`: this file.
 
-No algorithm and no `REGISTRY` tolerance changes.
+- `src/nwa4587_paper/lamellae_core.py` (fix round 1): the grain filter removes objects of exactly `min_grain_px` pixels, as the reference run did; `tests/test_lamellae.py` pins the boundary (500 px removed, 501 px kept).
+
+No other algorithm change and no `REGISTRY` tolerance change.
 
 ## How the acceptance ran
 
@@ -31,7 +33,7 @@ Each stage ran alone as `uv run paper <stage>`. A wrapper recorded the wall time
 | tima | 113.9 s (114.6 s with the frozen window) | 16.41 GB |
 | pyroxene | 59.8 s | 3.08 GB |
 | xenotime | 9.0 s | 0.83 GB |
-| lamellae | 9.8 s | 2.00 GB |
+| lamellae | 9.8 s (9.9 s after fix round 1) | 2.00 GB |
 | colormap | 196.5 s | 1.34 GB |
 | workflow | 7.4 s | 1.69 GB |
 | numbers | 0.7 s | 0.15 GB |
@@ -65,7 +67,7 @@ Fresh is this run. Expected is the reference run and the paper, as the task brie
 | `pyroxene.pct_1x.Pigeonite` | 51.96 | 52.0 | OK |
 | `pyroxene.gmm_mean.Augite` | 0.5336 | 0.5336 | OK |
 | `pyroxene.gmm_mean.Pigeonite` | 0.3056 | 0.3056 | OK |
-| `lamellae.n_grains_total` | 274 | 272 | MISMATCH |
+| `lamellae.n_grains_total` | 272 | 272 | OK (after fix round 1) |
 | `lamellae.n_grains_analyzed` | 154 | 154 | OK |
 | `lamellae.spacing.median_um` | 45.0 | 45.0 | OK |
 | `lamellae.orientation.rayleigh_p_value` | 0.7994 | 0.80 (within 0.01) | OK |
@@ -84,13 +86,7 @@ Other lamellae values: circular mean 33.7°, R̄ 0.038, orientations uniform; sp
 
 ### The lamellae grain count
 
-`lamellae.n_grains_total` is 274 here and 272 in the karak reference analysis. The cause is the small-object threshold in scikit-image 0.26.0, not the input:
-
-- The closed pyroxene mask has 4,436 components. 274 have at least 500 pixels, and two of those have exactly 500 pixels.
-- The port calls `remove_small_objects(..., max_size=min_size - 1)`. That keeps objects of 500 pixels or more, the documented meaning of the old `min_size=500`: 274 grains.
-- The reference script calls `remove_small_objects(..., min_size=500)` under scikit-image 0.26.0. The deprecation wrapper passes the value on as `max_size=500`, which removes objects of 500 pixels or fewer: 272 grains. The 0.26.0 source has the exclusive `< min_size` branch, but the wrapper never reaches it.
-
-Both 500-pixel grains are below the 2,000-pixel analysis limit, so the 154 analyzed grains and every statistic match. The code is unchanged. The decision is open: keep 274 (the documented threshold) or change the call to `max_size=min_size` to match 272.
+The first acceptance run gave `lamellae.n_grains_total` 274 against the reference 272. The closed pyroxene mask has 4,436 components; two of them have exactly 500 pixels. The port called `remove_small_objects(..., max_size=min_size - 1)` and kept them. The reference script called `remove_small_objects(..., min_size=500)` under scikit-image 0.26.0, whose deprecation wrapper passes the value on as the inclusive `max_size=500` and removes them. Fix round 1 changes the port to `max_size=min_size`, and the rerun gives 272. Both grains are below the 2,000-pixel analysis limit, so the 154 analyzed grains and every statistic were the same before and after the fix.
 
 ## Figure comparison
 
@@ -116,7 +112,7 @@ Each fresh PNG under `results/figures/` was compared with the published PDF.
 
 - **Lamellae spacing-direction bias.** The verbatim lamellae method has a confirmed bias, found during the port: the measured spacing is period / |sin 2θ|, exact only at 45°, and grains with lamellae near 0° and 90° drop out. Version 1 keeps the method verbatim; the author decides whether to change it.
 - **Rose diagram rotation sense.** The Fig 8 rose diagram turns in the mirror sense of the image. Version 1 keeps the rotation sense as the source has it.
-- **Lamellae grain count 274 against 272.** See "The lamellae grain count" above.
+- **Grain filter boundary.** The grain filter removes components of exactly `min_grain_px` (500) pixels, as the reference run did under scikit-image 0.26; the plan's "keeps objects >= min_size" was wrong at the boundary (see "The lamellae grain count").
 - **TIMA metrics.** They now come from `clusters/hires/labels`. Split accuracy 0.8412 (published 0.8407), combined 0.9909 (0.9910), 37,730,564 pixels compared (37,640,743).
 - **Inventory.** 15 phases carry pixels against the published 16; the published 92-pixel "Pyroxene (unresolved)" resolves at 1x.
 - **TIMA memory.** The TIMA stage peaks at 16.4 GB, not the 4 GB the plan assumed. The README says 17 GB.
@@ -124,7 +120,7 @@ Each fresh PNG under `results/figures/` was compared with the published PDF.
 ## Follow-ups
 
 - Rerun the acceptance from a fresh `paper karak` run once karak has a release.
-- Decide the lamellae grain threshold (274 or 272) and the spacing-direction bias.
+- Decide on the lamellae spacing-direction bias.
 - `REGISTRY` tolerances: these specs compare exactly although a fresh `paper karak` run can move them. Consider a relative tolerance for each:
   - `tables.n_mineral_pixels`, `tables.phases.*.pixels`
   - `fingerprints.phases.*.n_pixels`

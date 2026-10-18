@@ -84,14 +84,13 @@ spec says otherwise, and floats compare within an absolute or a relative toleran
 
   | Lamellae value | Published | This repository |
   |---|---|---|
-  | grains segmented | 128 | 274 (272 in the karak reference run, see below) |
+  | grains segmented | 128 | 272 |
   | grains analyzed | 59 | 154 |
   | median spacing | 51 µm | 45 µm |
   | Rayleigh p | 0.008 (not uniform) | 0.80 (uniform) |
 
-  The 274 against 272 comes from a scikit-image threshold change: two grains have
-  exactly 500 pixels. Both are below the 2,000-pixel analysis limit, so the analyzed
-  set and every statistic stay the same.
+  The grain filter removes components of 500 pixels or fewer, as the karak reference
+  run did under scikit-image 0.26.
 - The TIMA metrics now come from karak's full-resolution labels
   (`clusters/hires/labels`). They move slightly:
 

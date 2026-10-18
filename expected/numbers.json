@@ -688,7 +688,7 @@
       "spearman_rho": 0.322
     },
     "n_grains_analyzed": 154,
-    "n_grains_total": 274,
+    "n_grains_total": 272,
     "nyquist_limit_um": 6.0,
     "orientation": {
       "circular_mean_deg": 33.7,

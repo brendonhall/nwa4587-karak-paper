@@ -34,6 +34,18 @@ def test_binary_map_and_segmentation():
     assert n == 1
 
 
+def test_segmentation_removes_objects_of_exactly_min_size():
+    # The reference run removed objects of size <= min_size (scikit-image 0.26 maps
+    # min_size=500 to the inclusive max_size=500): 500 px goes, 501 px stays.
+    b = np.full((200, 300), -1, np.int8)
+    b[20:40, 20:45] = 1          # 20 x 25 = 500 px
+    b[100:103, 100:267] = 0      # 3 x 167 = 501 px
+    grains, n = L.segment_grains(b, min_size=500, settings=L.C.LAMELLAE)
+    assert n == 1
+    assert grains[20:40, 20:45].max() == 0
+    assert (grains[100:103, 100:267] > 0).all()
+
+
 def test_orientation_and_spacing_recovered():
     hires = striped_grain(period=20, angle_deg=30.0)
     b = L.binary_map(hires, 14, 13)
