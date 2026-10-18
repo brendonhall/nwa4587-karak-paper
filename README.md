@@ -71,6 +71,8 @@ Each stage writes `results/numbers/<stage>.json`. `paper numbers` merges them in
 `paper numbers --check` compares a fresh run with that file. The tolerance for each key
 is in the `REGISTRY` of `src/nwa4587_paper/numbers.py`: counts compare exactly unless a
 spec says otherwise, and floats compare within an absolute or a relative tolerance.
+The check is exact for the reference `paperflow.h5`. A fresh `paper karak` run can miss
+on large counts; a follow-up widens those tolerances.
 Each stage deletes its old `results/numbers/<stage>.json` before it runs, so a stage
 that fails leaves no file. `--check` reports every expected stage without a file as a
 miss. The one exception is `tima` when `data/tima` holds no raster: `--check` prints
@@ -93,8 +95,15 @@ miss. The one exception is `tima` when `data/tima` holds no raster: `--check` pr
   | median spacing | 51 µm | 45 µm |
   | Rayleigh p | 0.008 (not uniform) | 0.80 (uniform) |
 
-  The grain filter removes components of 500 pixels or fewer, as the karak reference
-  run did under scikit-image 0.26.
+  The grain filter removes components of 500 pixels or fewer, as the lamellae
+  reference script did under scikit-image 0.26.
+- The lamellae spacing method has a direction bias. It measures spacing as
+  period / |sin 2θ|, which is exact only at 45 degrees, and grains with lamellae near
+  0 and 90 degrees drop out. The port found the bias. Version 1 keeps the method
+  verbatim, and the author has not yet decided whether to change it. See
+  `docs/acceptance-2026.md`.
+- The fingerprints accumulate in float32 on purpose. The published fingerprint values
+  came from float32 accumulation, and float32 reproduces them.
 - The TIMA metrics now come from karak's full-resolution labels
   (`clusters/hires/labels`). They move slightly:
 
