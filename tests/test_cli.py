@@ -119,3 +119,12 @@ def test_tima_offset_option_reaches_stage(synth_h5, synth_tima, tmp_path, monkey
 def test_synth_prints_offset_hint(tmp_path, capsys):
     cli.main(["synth", str(tmp_path)])
     assert "use: --tima-offset 19,51" in capsys.readouterr().out
+
+
+def test_workflow_subcommand_writes_figure_and_numbers(synth_h5, synth_eds, tmp_path):
+    data = tmp_path / "data"
+    data.mkdir()
+    (data / "eds").symlink_to(synth_eds)
+    assert cli.main(["workflow", "--h5", str(synth_h5), "--out", str(tmp_path), "--data", str(data)]) == 0
+    assert (tmp_path / "figures" / "fig1_workflow.png").exists()
+    assert (tmp_path / "numbers" / "workflow.json").exists()
