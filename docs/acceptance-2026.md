@@ -1,8 +1,6 @@
 # Real-data acceptance, 2026-10-17
 
-PR 6 of 6. Base: `feat/lamellae-colormap` (PR 5). PRs 1 to 5 are open; the owner merges the stack in order.
-
-## What this PR adds
+## What the acceptance added
 
 - `expected/numbers.json`: every number of the acceptance run below (875 LaTeX macros plus the list values). `paper numbers --check` compares a fresh run with it.
 - `src/nwa4587_paper/constants.py`: `FIG5_WINDOW_XY = (1700, 3500)`, the Fig 5 window that the search chose on the real data. `tests/test_constants.py` asserts that it is set.
@@ -10,7 +8,10 @@ PR 6 of 6. Base: `feat/lamellae-colormap` (PR 5). PRs 1 to 5 are open; the owner
 - `CITATION.cff`: the repository and the paper as the preferred citation ("in revision, 2026"; the journal reference follows on acceptance). `cffconvert --validate` passes.
 - `docs/acceptance-2026.md`: this file.
 
-- `src/nwa4587_paper/lamellae_core.py` (fix round 1): the grain filter removes objects of exactly `min_grain_px` pixels, as the reference run did; `tests/test_lamellae.py` pins the boundary (500 px removed, 501 px kept).
+- `src/nwa4587_paper/lamellae_core.py` (fix round 1): the grain filter removes objects of exactly `min_grain_px` pixels, as the lamellae reference script did; `tests/test_lamellae.py` pins the boundary (500 px removed, 501 px kept).
+
+- `src/nwa4587_paper/xenotime.py` (fix round 2): `xenotime.centroid_2x` is the centroid of the largest component (3418.3, 3554.4), the 200 px grain that `bbox_2x` and `roi_2x` describe. It was the mean over all 213 xenotime pixels in 6 components (3533.9, 3526.7). `expected/numbers.json` was regenerated; only this key changed.
+- `src/nwa4587_paper/io.py`, `cli.py` (fix round 2): a missing HDF5 path, attribute, split node or `--expected` file, a malformed `--tima-offset` and a TIMA raster with no overlap each give one stderr line and an exit code (2, 3 or argparse's 2). Any other error gives one line and exit 5. Each stage deletes its old `numbers/<stage>.json` before it runs, and `paper numbers --check` reports an expected stage without a file as a miss.
 
 No other algorithm change and no `REGISTRY` tolerance change.
 
@@ -44,7 +45,7 @@ Then:
 - The TIMA stage logged `fig5 window x0=1700 y0=3500 size=520`. With `FIG5_WINDOW_XY = (1700, 3500)` frozen, a second `paper tima` wrote a `numbers/tima.json` identical to the first one (same window, `n_both_pyroxene` 243,156).
 - `cp results/numbers.json expected/numbers.json`, then `uv run paper numbers --check`: "all numbers match", exit 0.
 - `uv run pytest -q -W error tests/test_constants.py tests/test_tima.py`: 10 passed. The synthetic Fig 5 test passes because the window clamps to the synthetic raster.
-- `uv run pytest -q -W error`: 112 passed in 178 s.
+- `uv run pytest -q -W error`: 129 passed in 196 s (after fix round 2).
 
 ## Numbers
 
@@ -112,7 +113,7 @@ Each fresh PNG under `results/figures/` was compared with the published PDF.
 
 - **Lamellae spacing-direction bias.** The verbatim lamellae method has a confirmed bias, found during the port: the measured spacing is period / |sin 2θ|, exact only at 45°, and grains with lamellae near 0° and 90° drop out. Version 1 keeps the method verbatim; the author decides whether to change it.
 - **Rose diagram rotation sense.** The Fig 8 rose diagram turns in the mirror sense of the image. Version 1 keeps the rotation sense as the source has it.
-- **Grain filter boundary.** The grain filter removes components of exactly `min_grain_px` (500) pixels, as the reference run did under scikit-image 0.26; the plan's "keeps objects >= min_size" was wrong at the boundary (see "The lamellae grain count").
+- **Grain filter boundary.** The grain filter removes components of exactly `min_grain_px` (500) pixels, as the lamellae reference script did under scikit-image 0.26; the plan's "keeps objects >= min_size" was wrong at the boundary (see "The lamellae grain count").
 - **TIMA metrics.** They now come from `clusters/hires/labels`. Split accuracy 0.8412 (published 0.8407), combined 0.9909 (0.9910), 37,730,564 pixels compared (37,640,743).
 - **Inventory.** 15 phases carry pixels against the published 16; the published 92-pixel "Pyroxene (unresolved)" resolves at 1x.
 - **TIMA memory.** The TIMA stage peaks at 16.4 GB, not the 4 GB the plan assumed. The README says 17 GB.
@@ -132,7 +133,3 @@ Each fresh PNG under `results/figures/` was compared with the published PDF.
   Every float spec has a tolerance. `tables.phases.*.pct` and `fingerprints.phases.*.area_pct` (0.0005 pp) and `pyroxene.gmm_mean.*` (0.0005) are tight for a fresh clustering run.
 - Pillow warns `DecompressionBombWarning` for the TIMA raster (159 Mpx) and one EDS map (104 Mpx). Set `Image.MAX_IMAGE_PIXELS` for these known inputs.
 - Figure layout: the Fig 4 box overlap and missing labels, the Fig 8 panel (d) tick labels and panel (b) radial labels, the Fig 2 fixed y scale, the Fig 7 legends.
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-
-https://claude.ai/code/session_01WyX19sxPcuhKUG3Jw8YCFn
