@@ -208,6 +208,22 @@ class LamellaeSettings:
     coherence_min: float = 0.2
     n_profiles: int = 20
     nyquist_px: float = 4.0
+    erosion_iterations: int = 2          # grain mask erosion before the structure tensor average
+    erosion_fallback_px: int = 50        # keep the uneroded mask if erosion leaves fewer pixels
+    coherence_px_min: float = 0.05       # per-pixel coherence floor for the orientation average
+    min_orientation_px: int = 20         # fewest pixels for an orientation estimate
+    min_perp_extent_px: int = 6          # narrowest grain extent that gets profiles
+    profile_margin_px: int = 2           # profile positions stay this far inside the grain extent
+    profile_extent_divisor: int = 3      # profile count cap is perpendicular extent / this
+    min_profile_cap: int = 3             # lower bound on that cap
+    min_profile_len_px: int = 6          # fewest valid, in-grain and total samples per profile
+    profile_std_min: float = 0.01        # flat profiles are skipped
+    peak_distance: int = 2               # find_peaks distance on the autocorrelation
+    peak_height: float = 0.05            # find_peaks height
+    peak_prominence: float = 0.03        # find_peaks prominence
+    min_valid_profiles: int = 2          # fewest profiles with a spacing
+    augite_fraction_min: float = 0.01    # below: grain has no lamellae
+    augite_fraction_max: float = 0.99    # above: grain has no lamellae
 
 
 LAMELLAE = LamellaeSettings()
@@ -221,6 +237,15 @@ class ColormapSettings:
 
 
 COLORMAP = ColormapSettings()
+# (upper bound of scalar, region name) in ascending order; the last name takes the rest.
+COLORMAP_REGION_BOUNDS: tuple[tuple[float, str], ...] = (
+    (0.12, "dark blue"),
+    (0.35, "cyan"),
+    (0.55, "green"),
+    (0.75, "yellow"),
+    (0.88, "orange-red"),
+    (float("inf"), "dark red"),
+)
 
 RARE_PHASE_THRESHOLD_PX = 500_000
 FINGERPRINT_EXCLUDED_KEYS: tuple[str, ...] = ("Epoxy", "Weathering Assemblage")

@@ -61,7 +61,7 @@ def test_synth_subcommand(tmp_path):
     assert (tmp_path / "data" / "tima" / "phases.png").exists()
 
 
-def test_figures_runs_present_stages(synth_h5, synth_eds, tmp_path):
+def test_figures_runs_present_stages(synth_h5, synth_eds, tmp_path, small_colormap):
     data = tmp_path / "data"
     data.mkdir()
     (data / "eds").symlink_to(synth_eds)
@@ -74,7 +74,7 @@ def test_console_script_runs():
     assert out.returncode == 0 and "tables" in out.stdout
 
 
-def test_figures_then_numbers_on_synthetic(tmp_path):
+def test_figures_then_numbers_on_synthetic(tmp_path, small_colormap):
     assert cli.main(["synth", str(tmp_path)]) == 0
     common = ["--h5", str(tmp_path / "results" / "paperflow.h5"), "--out", str(tmp_path / "results"),
               "--data", str(tmp_path / "data")]
@@ -87,7 +87,7 @@ def test_figures_then_numbers_on_synthetic(tmp_path):
     assert r"\nwaTablesNMineralPixels" in tex
 
 
-def test_missing_tima_raster_skips_with_exit_0(synth_h5, synth_eds, tmp_path, capsys):
+def test_missing_tima_raster_skips_with_exit_0(synth_h5, synth_eds, tmp_path, capsys, small_colormap):
     data = tmp_path / "nodata"
     data.mkdir()
     (data / "eds").symlink_to(synth_eds)
@@ -128,3 +128,9 @@ def test_workflow_subcommand_writes_figure_and_numbers(synth_h5, synth_eds, tmp_
     assert cli.main(["workflow", "--h5", str(synth_h5), "--out", str(tmp_path), "--data", str(data)]) == 0
     assert (tmp_path / "figures" / "fig1_workflow.png").exists()
     assert (tmp_path / "numbers" / "workflow.json").exists()
+
+
+def test_lamellae_subcommand_writes_figure_and_numbers(synth_h5, tmp_path):
+    assert cli.main(["lamellae", "--h5", str(synth_h5), "--out", str(tmp_path), "--data", str(tmp_path / "data")]) == 0
+    assert (tmp_path / "figures" / "fig8_lamellae.png").exists()
+    assert (tmp_path / "numbers" / "lamellae.json").exists()
