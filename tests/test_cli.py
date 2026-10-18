@@ -128,3 +128,9 @@ def test_workflow_subcommand_writes_figure_and_numbers(synth_h5, synth_eds, tmp_
     assert cli.main(["workflow", "--h5", str(synth_h5), "--out", str(tmp_path), "--data", str(data)]) == 0
     assert (tmp_path / "figures" / "fig1_workflow.png").exists()
     assert (tmp_path / "numbers" / "workflow.json").exists()
+
+
+def test_lamellae_subcommand_writes_figure_and_numbers(synth_h5, tmp_path):
+    assert cli.main(["lamellae", "--h5", str(synth_h5), "--out", str(tmp_path), "--data", str(tmp_path / "data")]) == 0
+    assert (tmp_path / "figures" / "fig8_lamellae.png").exists()
+    assert (tmp_path / "numbers" / "lamellae.json").exists()

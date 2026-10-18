@@ -117,3 +117,16 @@ def test_equally_specific_wildcards_are_an_error(reg):
     with pytest.raises(ValueError) as e:
         N.spec_for("demo.A.pct")
     assert "demo.*.pct" in str(e.value) and "demo.A.*" in str(e.value)
+
+
+def test_nan_round_trips_as_null(reg, tmp_path):
+    reg({"nanstage.x": N.Spec("float", tol=0.1), "nanstage.sub.y": N.Spec("float", tol=0.1),
+         "nanstage.n": N.Spec("int")})
+    nums = {"x": float("nan"), "sub": {"y": float("nan")}, "n": 0}
+    path = N.write_stage(tmp_path, "nanstage", nums)
+    text = path.read_text()
+    assert "NaN" not in text
+    loaded = json.loads(text)                       # strict parse: no bare NaN token
+    assert loaded == {"x": None, "sub": {"y": None}, "n": 0}
+    assert N.check({"nanstage": nums}, {"nanstage": loaded}) == []
+    assert N.check({"nanstage": {"x": None, "sub": {"y": 1.0}, "n": 0}}, {"nanstage": loaded}) != []

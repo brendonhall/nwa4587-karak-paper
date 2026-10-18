@@ -75,8 +75,23 @@ def write_stage(out: Path, stage: str, numbers: dict) -> Path:
     d = Path(out) / "numbers"
     d.mkdir(parents=True, exist_ok=True)
     path = d / f"{stage}.json"
-    path.write_text(json.dumps(numbers, indent=2, sort_keys=True, default=_jsonable))
+    path.write_text(json.dumps(_nan_to_none(numbers), indent=2, sort_keys=True, default=_jsonable))
     return path
+
+
+def _nan_to_none(x):
+    """NaN floats become None so the file is strict JSON (`null`)."""
+    if isinstance(x, dict):
+        return {k: _nan_to_none(v) for k, v in x.items()}
+    if isinstance(x, (list, tuple)):
+        return [_nan_to_none(v) for v in x]
+    if hasattr(x, "item") and not hasattr(x, "tolist"):
+        x = x.item()
+    if hasattr(x, "item") and getattr(x, "ndim", 1) == 0:
+        x = x.item()
+    if isinstance(x, float) and math.isnan(x):
+        return None
+    return x
 
 
 def _jsonable(x):
@@ -135,6 +150,10 @@ class Miss:
 
 
 def _close(spec: Spec, a, e) -> bool:
+    a_nan = a is None or (isinstance(a, float) and math.isnan(a))
+    e_nan = e is None or (isinstance(e, float) and math.isnan(e))
+    if a_nan or e_nan:
+        return a_nan and e_nan
     if spec.kind == "float":
         a, e = float(a), float(e)
         if math.isnan(a) and math.isnan(e):

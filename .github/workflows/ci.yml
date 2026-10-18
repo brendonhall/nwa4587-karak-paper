@@ -47,3 +47,5 @@ jobs:
           test -s smoke/results/figures/fig1_workflow.pdf
           test -s smoke/results/figures/fig6_xenotime_callout.pdf
           test -s smoke/results/figures/fig7_pyroxene_refinement.pdf
+          test -s smoke/results/figures/fig8_lamellae.pdf
+          test -s smoke/results/tables/lamellae_grain_table.csv
