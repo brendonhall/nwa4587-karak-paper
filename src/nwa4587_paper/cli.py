@@ -7,6 +7,7 @@ import sys
 from pathlib import Path
 from typing import Callable
 
+from . import data as D
 from . import numbers as N
 from .io import DataPaths, MissingInput, MissingPhase, Run
 
@@ -121,6 +122,40 @@ def cmd_synth(args) -> int:
     return 0
 
 
+def cmd_data(args) -> int:
+    if args.src.startswith("zenodo:"):
+        return D.zenodo_stub(args.src[len("zenodo:"):])
+    try:
+        info = D.copy_inputs(Path(args.src), Path(args.data), force=args.force)
+    except MissingInput as e:
+        print(f"data: {e}", file=sys.stderr)
+        return 2
+    print(f"data: {info['n_png']} PNG, mask {'yes' if info['mask'] else 'no'}, "
+          f"TIMA {'yes' if info['tima'] else 'no'} -> {args.data}")
+    return 0 if info["n_png"] else 2
+
+
+def cmd_karak(args) -> int:
+    return D.run_karak(Path(args.data), Path(args.out), workers=args.workers, extra=args.extra)
+
+
+def cmd_all(args) -> int:
+    steps = []
+    if args.src:
+        steps.append(cmd_data)
+    steps += [cmd_karak, cmd_figures, cmd_numbers]
+    for step in steps:
+        rc = step(args)
+        if rc:
+            return rc
+    return 0
+
+
+def _add_run_opts(p: argparse.ArgumentParser) -> None:
+    p.add_argument("--workers", type=int, default=0)
+    p.add_argument("extra", nargs="*", help="extra arguments for karak run, after --")
+
+
 def build_parser() -> argparse.ArgumentParser:
     _import_stages()
     p = argparse.ArgumentParser(prog="paper", description="Regenerate the NWA 4587 paper results.")
@@ -135,6 +170,22 @@ def build_parser() -> argparse.ArgumentParser:
     sp = sub.add_parser("numbers", help="merge numbers, render numbers.tex, optionally --check")
     _add_common(sp)
     sp.set_defaults(func=cmd_numbers)
+    sp = sub.add_parser("data", help="copy the input data into place")
+    sp.add_argument("--from", dest="src", required=True, help="a directory or zenodo:DOI")
+    sp.add_argument("--data", default="data")
+    sp.add_argument("--force", action="store_true")
+    sp.set_defaults(func=cmd_data)
+    sp = sub.add_parser("karak", help="run the karak paper flow")
+    sp.add_argument("--data", default="data")
+    sp.add_argument("--out", default="results")
+    _add_run_opts(sp)
+    sp.set_defaults(func=cmd_karak)
+    sp = sub.add_parser("all", help="data (with --from), karak, figures, numbers")
+    _add_common(sp)
+    sp.add_argument("--from", dest="src", default=None)
+    sp.add_argument("--force", action="store_true")
+    _add_run_opts(sp)
+    sp.set_defaults(func=cmd_all)
     sp = sub.add_parser("synth", help="write synthetic data for a smoke run")
     sp.add_argument("dir")
     sp.set_defaults(func=cmd_synth)
