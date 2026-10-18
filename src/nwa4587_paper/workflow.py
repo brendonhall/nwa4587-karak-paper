@@ -45,6 +45,12 @@ def _jet_thumb(eds: Path, trim: int) -> np.ndarray:
     return rgb[::C.FIG1_PNG_STRIDE, ::C.FIG1_PNG_STRIDE]
 
 
+def _on_grey(labels: np.ndarray, rgb: np.ndarray) -> np.ndarray:
+    """Pixels outside the mask take the figure background grey."""
+    rgb[labels == -1] = MASKED_GREY
+    return rgb
+
+
 def _panels(run: Run, eds: Path) -> tuple[list[np.ndarray], int]:
     s = C.FIG1_H5_STRIDE
     raw = run.raw_channel(C.FIG1_ELEMENT)[::s, ::s]
@@ -53,8 +59,7 @@ def _panels(run: Run, eds: Path) -> tuple[list[np.ndarray], int]:
     scalar = np.repeat(np.clip(raw / vmax, 0, 1)[:, :, None], 3, axis=2)
 
     ca = run.channel(DENOISE_ELEMENT)[::s, ::s]
-    vmax_dn = float(ca[run.mask[::s, ::s]].max()) if run.mask[::s, ::s].any() else 1.0
-    gray = np.where(run.mask[::s, ::s], np.clip(ca / (vmax_dn or 1.0), 0, 1), MASKED_GREY)
+    gray = np.where(run.mask[::s, ::s], np.clip(ca / vmax, 0, 1), MASKED_GREY)
     denoised = np.repeat(gray[:, :, None], 3, axis=2)
 
     pre_full = run.labels_before(SPLIT_NODE)
@@ -62,17 +67,19 @@ def _panels(run: Run, eds: Path) -> tuple[list[np.ndarray], int]:
     pre = pre_full[::s, ::s]
     final = run.labels[::s, ::s]
     imgs = [_jet_thumb(eds, run.geometry.header_trim_px), scalar, denoised,
-            render.colorize(pre, run.keys_before(SPLIT_NODE)), render.colorize(final, run.keys)]
+            _on_grey(pre, render.colorize(pre, run.keys_before(SPLIT_NODE))),
+            _on_grey(final, render.colorize(final, run.keys))]
     return imgs, n_clusters
 
 
-def _legend_entries(run: Run) -> list[tuple[str, str]]:
+def _legend_entries(run: Run) -> list[tuple[str, tuple | str]]:
+    """Every final key as (display name, colour), by descending thumbnail count; absent keys last."""
     s = C.FIG1_H5_STRIDE
     thumb = run.labels[::s, ::s]
-    labs, n = np.unique(thumb[thumb >= 0], return_counts=True)
-    order = [int(lab) for lab in labs[np.argsort(-n, kind="stable")]]
-    keys = [run.keys[lab] for lab in order if lab in run.keys]
-    return [(k, C.PALETTE[k]) for k in keys if k in C.PALETTE]
+    n = {lab: int((thumb == lab).sum()) for lab in run.keys}
+    order = sorted(run.keys, key=lambda lab: -n[lab])      # stable: ties keep label order
+    return [(C.DISPLAY_NAMES.get(run.keys[lab], run.keys[lab]),
+             C.PALETTE.get(run.keys[lab], C.PALETTE_FALLBACK_COLOR)) for lab in order]
 
 
 def _draw(run: Run, imgs: list[np.ndarray], n_clusters: int, path: Path) -> None:
@@ -97,7 +104,7 @@ def _draw(run: Run, imgs: list[np.ndarray], n_clusters: int, path: Path) -> None
                                            color=C.FIG1_ARROW_COLOR, linewidth=ARROW_LW))
     fig.text((MARGIN + PANEL_W) / FIG_W, (MARGIN + LEGEND_H + NOTE_H / 2) / fig_h, NOTE_TEXT,
              fontsize=NOTE_PT, style="italic", color=C.FIG1_NOTE_COLOR, ha="left", va="center")
-    handles = [Patch(color=c, label=C.DISPLAY_NAMES.get(k, k)) for k, c in _legend_entries(run)]
+    handles = [Patch(color=c, label=name) for name, c in _legend_entries(run)]
     fig.legend(handles=handles, loc="lower center", ncol=LEGEND_NCOL, fontsize=LEGEND_PT, frameon=False,
                bbox_to_anchor=(0.5, MARGIN / fig_h))
     for ext in ("pdf", "png"):
