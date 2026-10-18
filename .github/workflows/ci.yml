@@ -49,3 +49,4 @@ jobs:
           test -s smoke/results/figures/fig7_pyroxene_refinement.pdf
           test -s smoke/results/figures/fig8_lamellae.pdf
           test -s smoke/results/tables/lamellae_grain_table.csv
+          test -s smoke/results/numbers/colormap.json

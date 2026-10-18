@@ -17,7 +17,7 @@ NEEDS_RUN = {"colormap": False}
 
 def _import_stages() -> None:
     """Each stage module is imported explicitly; later tasks add theirs here."""
-    from . import fingerprints, lamellae, pyroxene, tables, tima, workflow, xenotime
+    from . import colormap, fingerprints, lamellae, pyroxene, tables, tima, workflow, xenotime
 
     STAGES.setdefault("tables", tables.run)
     STAGES.setdefault("fingerprints", fingerprints.run)
@@ -25,6 +25,7 @@ def _import_stages() -> None:
     STAGES.setdefault("pyroxene", pyroxene.run)
     STAGES.setdefault("xenotime", xenotime.run)
     STAGES.setdefault("lamellae", lamellae.run)
+    STAGES.setdefault("colormap", colormap.run)
     STAGES.setdefault("workflow", workflow.run)
 
 

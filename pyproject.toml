@@ -36,3 +36,4 @@ packages = ["src/nwa4587_paper"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = ["slow: builds the full 256^3 LUT"]

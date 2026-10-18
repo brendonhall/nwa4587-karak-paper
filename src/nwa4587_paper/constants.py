@@ -237,6 +237,15 @@ class ColormapSettings:
 
 
 COLORMAP = ColormapSettings()
+# (upper bound of scalar, region name) in ascending order; the last name takes the rest.
+COLORMAP_REGION_BOUNDS: tuple[tuple[float, str], ...] = (
+    (0.12, "dark blue"),
+    (0.35, "cyan"),
+    (0.55, "green"),
+    (0.75, "yellow"),
+    (0.88, "orange-red"),
+    (float("inf"), "dark red"),
+)
 
 RARE_PHASE_THRESHOLD_PX = 500_000
 FINGERPRINT_EXCLUDED_KEYS: tuple[str, ...] = ("Epoxy", "Weathering Assemblage")
