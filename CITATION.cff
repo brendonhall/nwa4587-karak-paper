@@ -1,0 +1,37 @@
+cff-version: 1.2.0
+message: >-
+  If you use this repository, please cite the paper (see preferred-citation)
+  and this repository.
+title: "nwa4587-karak-paper: regenerate the figures, tables and numbers of the NWA 4587 paper"
+type: software
+license: MIT
+repository-code: "https://github.com/brendonhall/nwa4587-karak-paper"
+authors:
+  - family-names: Hall
+    given-names: Brendon J.
+    orcid: "https://orcid.org/0000-0002-2244-4994"
+  - family-names: Izawa
+    given-names: Matthew R. M.
+    orcid: "https://orcid.org/0000-0001-5456-2912"
+preferred-citation:
+  type: article
+  title: >-
+    Unsupervised mineral phase mapping from SEM-EDS element maps: a
+    density-based clustering pipeline with multi-resolution refinement
+  year: 2026
+  notes: "In revision, 2026. The journal reference follows on acceptance."
+  authors:
+    - family-names: Izawa
+      given-names: Matthew R. M.
+      orcid: "https://orcid.org/0000-0001-5456-2912"
+    - family-names: Hall
+      given-names: Brendon J.
+      orcid: "https://orcid.org/0000-0002-2244-4994"
+    - family-names: Cao
+      given-names: Fengke
+    - family-names: Luo
+      given-names: Tingyao
+    - family-names: Yokoyama
+      given-names: Sean T.
+    - family-names: Zhao
+      given-names: Yuyan Sara

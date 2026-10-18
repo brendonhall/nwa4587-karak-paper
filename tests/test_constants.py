@@ -41,3 +41,4 @@ def test_offsets_and_geometry():
     assert (C.TIMA_DX, C.TIMA_DY) == (1919, 1051)
     assert C.PIXEL_SIZE_UM_1X == 3.0
     assert C.FIG7_CROP_1X == (6061, 6861, 3570, 4370)
+    assert C.FIG5_WINDOW_XY is not None

@@ -44,7 +44,9 @@ LEGEND_MAX_COLS = 5
 
 
 def region(labels: np.ndarray, label: int, pad: int) -> tuple[dict, slice, slice]:
-    """Components of `label` (4-connectivity), the largest one's padded square window."""
+    """Components of `label` (4-connectivity). The info describes the largest component:
+    its size, bounding box and centroid (row, col, in 2x pixels). The window is a padded
+    square around that component."""
     comp, n = ndimage.label(labels == label)
     sizes = np.bincount(comp.ravel())[1:]
     big = int(np.argmax(sizes)) + 1
@@ -59,7 +61,7 @@ def region(labels: np.ndarray, label: int, pad: int) -> tuple[dict, slice, slice
         diff = -diff
         a0, a1 = max(a0 - diff // 2, 0), min(a1 + diff - diff // 2, h)
     info = {"n_components": int(n), "largest_component_px": int(sizes.max()),
-            "bbox_2x": [r0, c0, r1, c1]}
+            "bbox_2x": [r0, c0, r1, c1], "centroid_2x": [float(rows.mean()), float(cols.mean())]}
     return info, slice(a0, a1), slice(b0, b1)
 
 
@@ -178,7 +180,4 @@ def run(run: Run, out: Path, data: DataPaths) -> dict:
     figs = Path(out) / "figures"
     figs.mkdir(parents=True, exist_ok=True)
     _draw(run, mask, rs, cs, figs / FIG_NAME)
-    rows, cols = np.nonzero(mask)
-    return {"n_pixels_2x": int(mask.sum()), **info,
-            "roi_2x": [rs.start, cs.start, rs.stop, cs.stop],
-            "centroid_2x": [float(rows.mean()), float(cols.mean())]}
+    return {"n_pixels_2x": int(mask.sum()), **info, "roi_2x": [rs.start, cs.start, rs.stop, cs.stop]}

@@ -17,6 +17,14 @@ def test_region_is_square_and_padded():
     assert rs.start <= 35 and cs.start <= 45 and cs.stop >= 65
 
 
+def test_centroid_is_the_largest_component():
+    img = np.full((100, 100), -1)
+    img[40:44, 50:60] = 10          # 40 px, centroid (41.5, 54.5)
+    img[90:92, 90:92] = 10          # 4 px far away; a mean over all pixels moves off the grain
+    info, _, _ = xenotime.region(img, 10, pad=5)
+    assert info["centroid_2x"] == [41.5, 54.5]
+
+
 def test_xenotime_stage(synth_h5, tmp_path):
     with Run.open(synth_h5) as run:
         nums = xenotime.run(run, tmp_path, DataPaths())
