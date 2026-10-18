@@ -117,3 +117,8 @@ under "Cite this repository". The journal reference follows when the paper is ac
 The code arrives as a stack of six pull requests (PR 1 to PR 6). Each PR uses the one
 before it as its base. The repository owner reviews and merges them in order.
 Run the tests with `uv sync --group dev` and `uv run pytest`.
+
+A wrong input stops a stage with one line on stderr and an exit code: 1 for a
+`--check` miss, 2 for a missing file, HDF5 path or attribute, 3 for a missing phase
+or split node, 4 for a stage that does not exist yet, and 5 for any other error.
+Set `PAPER_DEBUG=1` to print the full traceback as well.

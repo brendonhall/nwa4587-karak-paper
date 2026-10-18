@@ -299,7 +299,10 @@ def run(run: Run, out: Path, data: DataPaths, dx: int = C.TIMA_DX, dy: int = C.T
     figs, tabs = Path(out) / "figures", Path(out) / "tables"
     figs.mkdir(parents=True, exist_ok=True)
     tabs.mkdir(parents=True, exist_ok=True)
-    k, t, info = T.align(run.labels_1x, T.decode_tima(data.tima_png), dx, dy)
+    try:
+        k, t, info = T.align(run.labels_1x, T.decode_tima(data.tima_png), dx, dy)
+    except ValueError as e:
+        raise MissingInput(f"{e} for {data.tima_png} at dx={dx}, dy={dy}") from e
     sp = _metrics(run, k, t, "split")
     kc, tc = T.combine_pyroxene(run.phase, k, t)
     cb = _metrics(run, kc, tc, "combined")

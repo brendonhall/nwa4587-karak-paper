@@ -3,13 +3,15 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
+import traceback
 from pathlib import Path
 from typing import Callable
 
 from . import data as D
 from . import numbers as N
-from .io import DataPaths, MissingInput, MissingPhase, Run
+from .io import DataPaths, MissingInput, MissingPhase, Run, require
 
 STAGES: dict[str, Callable] = {}
 STAGE_ORDER = ["tables", "fingerprints", "tima", "pyroxene", "xenotime", "lamellae", "colormap", "workflow"]
@@ -42,13 +44,24 @@ def data_paths(data_dir: Path) -> DataPaths:
     return DataPaths(eds_dir=eds if eds.is_dir() else None, tima_png=tima)
 
 
+def tima_offset(text: str) -> tuple[int, int]:
+    """`DX,DY` as two integers, for the hidden `--tima-offset`."""
+    parts = text.split(",")
+    try:
+        if len(parts) != 2:
+            raise ValueError
+        return int(parts[0]), int(parts[1])
+    except ValueError:
+        raise argparse.ArgumentTypeError(f"expected DX,DY (two integers), got {text!r}") from None
+
+
 def _add_common(p: argparse.ArgumentParser) -> None:
     p.add_argument("--h5", default="results/paperflow.h5")
     p.add_argument("--out", default="results")
     p.add_argument("--data", default="data")
     p.add_argument("--check", action="store_true")
     p.add_argument("--expected", default="expected/numbers.json")
-    p.add_argument("--tima-offset", default=None, help=argparse.SUPPRESS)
+    p.add_argument("--tima-offset", type=tima_offset, default=None, help=argparse.SUPPRESS)
 
 
 def run_stage(name: str, args, **stage_kwargs) -> int:
@@ -61,7 +74,7 @@ def run_stage(name: str, args, **stage_kwargs) -> int:
             return 0
         offset = getattr(args, "tima_offset", None)
         if offset:
-            dx, dy = (int(v) for v in offset.split(","))
+            dx, dy = offset
             stage_kwargs = {**stage_kwargs, "dx": dx, "dy": dy}
     try:
         if NEEDS_RUN.get(name, True):
@@ -83,7 +96,7 @@ def run_stage(name: str, args, **stage_kwargs) -> int:
 
 
 def _check(numbers: dict, expected_path: str) -> int:
-    expected = json.loads(Path(expected_path).read_text())
+    expected = json.loads(require(Path(expected_path), "expected numbers file", "numbers").read_text())
     expected = {k: v for k, v in expected.items() if k in numbers}
     misses = N.check(numbers, expected)
     print(N.format_misses(misses))
@@ -103,8 +116,13 @@ def cmd_numbers(args) -> int:
 def cmd_figures(args) -> int:
     worst = 0
     for name in STAGE_ORDER:
-        if name in STAGES:
-            worst = max(worst, run_stage(name, args))
+        if name not in STAGES:
+            continue
+        try:
+            rc = run_stage(name, args)
+        except Exception as e:
+            rc = _report_unexpected(name, e)
+        worst = max(worst, rc)
     return worst
 
 
@@ -192,13 +210,30 @@ def build_parser() -> argparse.ArgumentParser:
     return p
 
 
+def _report_unexpected(prefix: str, e: Exception) -> int:
+    """One stderr line for an error no stage expects; the traceback too under PAPER_DEBUG=1."""
+    if os.environ.get("PAPER_DEBUG") == "1":
+        traceback.print_exception(e)
+    print(f"{prefix}: {type(e).__name__}: {e}", file=sys.stderr)
+    return 5
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
     if args.cmd in STAGE_ORDER and args.cmd not in STAGES:
         print(f"{args.cmd}: stage not implemented yet", file=sys.stderr)
         return 4
-    return args.func(args)
+    try:
+        return args.func(args)
+    except MissingInput as e:
+        print(f"{args.cmd}: {e}", file=sys.stderr)
+        return 2
+    except MissingPhase as e:
+        print(f"{args.cmd}: {e}", file=sys.stderr)
+        return 3
+    except Exception as e:
+        return _report_unexpected("paper", e)
 
 
 if __name__ == "__main__":

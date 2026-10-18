@@ -39,7 +39,7 @@ def compute(run: Run) -> dict[int, dict]:
     """Per label mean, std, n_pixels and area_pct (over all mineral pixels), excluded keys removed."""
     from karak.identification.fingerprint import compute_fingerprints
 
-    cube = run.f["denoised/cube"][:]
+    cube = run.node("denoised/cube")[:]
     res = compute_fingerprints(cube, run.cleaned_labels_flat, run.mineral_indices,
                                run.element_order, accumulate="float32")
     drop = {run.phase(k) for k in C.FINGERPRINT_EXCLUDED_KEYS if run.has(k)}
