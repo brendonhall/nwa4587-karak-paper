@@ -60,3 +60,24 @@ def test_stage_lowered_threshold_analyzes_a_grain(diagonal_h5, tmp_path):
         rows = list(csv.DictReader(f))
     assert len(rows) == nums["n_grains_analyzed"]
     assert "bbox" not in rows[0] and "spacing_um" in rows[0]
+
+
+def test_figure_follows_the_source(diagonal_h5, tmp_path, monkeypatch):
+    figs = []
+    monkeypatch.setattr(lamellae.plt, "close", lambda fig: figs.append(fig))
+    settings = dataclasses.replace(C.LAMELLAE, min_analysis_px=500)
+    with Run.open(diagonal_h5) as run:
+        lamellae.run(run, tmp_path, DataPaths(), settings=settings)
+    fig = figs[0]
+    a, c = fig.axes[0], fig.axes[2]
+    rose = [ax for ax in fig.axes if ax.name == "polar"][0]
+    d = [ax for ax in fig.axes if ax.get_xlabel() == "Grain area (µm²)"]
+    assert len(d) == 1 and d[0].get_ylabel() == "Lamellae spacing (µm)"
+    assert a.get_title() == "" and c.get_title() == ""
+    assert d[0].get_title() == ""
+    bars = [p.get_height() for p in rose.patches]
+    assert abs(sum(bars) / 2 - 1.0) < 1e-9                    # normalised by the sum, mirrored twice
+    mean_line = rose.lines[0]
+    assert abs(max(mean_line.get_ydata()) - 1.15 * max(bars)) < 1e-9
+    box = [t for t in rose.texts if "R̄" in t.get_text()][0]
+    assert box.get_position() == (0.02, 0.02) and box.get_va() == "bottom"

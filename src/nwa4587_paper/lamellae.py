@@ -33,7 +33,7 @@ N.register({
     "lamellae.coherence.*": N.Spec("float", tol=0.01, fmt="{:.2f}"),
 })
 
-AUGITE_KEY, PIGEONITE_KEY = "Augite", "Pigeonite"
+AUGITE_KEY, PIGEONITE_KEY = C.FIG5_KARAK_HIGH_KEY, C.FIG5_KARAK_LOW_KEY
 FIG_NAME = "fig8_lamellae"
 TABLE_NAME = "lamellae_grain_table.csv"
 SUMMARY_NAME = "lamellae_summary.json"
@@ -56,7 +56,8 @@ ROSE_ALPHA, ROSE_RLABEL_DEG = 0.7, 225
 HIST_CLIP_FACTOR, HIST_CLIP_PCT = 1.3, 98
 HIST_BINS_MIN, HIST_BINS_MAX, HIST_BINS_DIVISOR = 10, 25, 3
 BAND_ALPHA, HIST_ALPHA = 0.15, 0.8
-STATS_BOX_XY = (-0.14, 1.0)           # axes fraction, left of the rose
+STATS_BOX_XY = (0.02, 0.02)           # axes fraction, lower left
+MEAN_LINE_FACTOR = 1.15
 EMPTY_NOTE = "no grains analyzed"
 P_FLOOR = 0.001
 
@@ -72,7 +73,6 @@ def _empty(ax, text: str = EMPTY_NOTE) -> None:
 
 
 def _panel_a(fig, ax, run: Run, recs: list[dict]) -> None:
-    ax.set_title("BSE and lamellae orientation", fontsize=TITLE_PT)
     if not recs:
         _empty(ax)
         return
@@ -137,7 +137,7 @@ def _fill_rose(pax, summary: dict, recs: list[dict]) -> None:
     area = np.array([r["area_um2"] for r in recs])
     edges = np.arange(0, 180 + ROSE_BIN_DEG, ROSE_BIN_DEG)
     hist, _ = np.histogram(orient, bins=edges, weights=area)
-    hist = hist / hist.max()
+    hist = hist / hist.sum()
     centers = np.radians((edges[:-1] + edges[1:]) / 2)
     width = np.radians(ROSE_BIN_DEG)
     for off in (0, np.pi):
@@ -148,16 +148,15 @@ def _fill_rose(pax, summary: dict, recs: list[dict]) -> None:
     pax.set_rlabel_position(ROSE_RLABEL_DEG)
     mu = np.radians(summary["orientation"]["circular_mean_deg"])
     for off in (0, np.pi):
-        pax.plot([mu + off, mu + off], [0, 1], color=C.PALETTE[AUGITE_KEY], ls="--", lw=1.2)
+        pax.plot([mu + off, mu + off], [0, MEAN_LINE_FACTOR * hist.max()], color=C.PALETTE[AUGITE_KEY], ls="--", lw=1.2)
     o = summary["orientation"]
     txt = f"R̄ = {o['rayleigh_R_bar']:.2f}\n{_fmt_p(o['rayleigh_p_value'])}\nμ = {o['circular_mean_deg']:.0f}°"
     pax.text(*STATS_BOX_XY, txt, transform=pax.transAxes,
-             fontsize=LEGEND_PT, va="top", ha="left",
+             fontsize=LEGEND_PT, va="bottom", ha="left",
              bbox=dict(boxstyle="round", fc="white", ec="0.7", alpha=0.9))
 
 
 def _panel_c(ax, summary: dict, recs: list[dict]) -> None:
-    ax.set_title("Lamella spacing", fontsize=TITLE_PT)
     ax.set_xlabel("Spacing (µm)", fontsize=LABEL_PT)
     ax.set_ylabel("Grains", fontsize=LABEL_PT)
     ax.tick_params(labelsize=TICK_PT)
@@ -184,9 +183,8 @@ def _panel_c(ax, summary: dict, recs: list[dict]) -> None:
 
 
 def _panel_d(fig, ax, summary: dict, recs: list[dict]) -> None:
-    ax.set_title("Grain area vs spacing", fontsize=TITLE_PT)
-    ax.set_xlabel("Spacing (µm)", fontsize=LABEL_PT)
-    ax.set_ylabel("Grain area (µm²)", fontsize=LABEL_PT)
+    ax.set_xlabel("Grain area (µm²)", fontsize=LABEL_PT)
+    ax.set_ylabel("Lamellae spacing (µm)", fontsize=LABEL_PT)
     ax.tick_params(labelsize=TICK_PT)
     if not recs:
         _empty(ax)
@@ -197,8 +195,8 @@ def _panel_d(fig, ax, summary: dict, recs: list[dict]) -> None:
     orient = np.array([r["orientation_deg"] for r in recs])
     norm = Normalize(0, 180)
     cmap = plt.get_cmap(ORIENT_CMAP)
-    ax.errorbar(spac, area, xerr=iqr / 2, fmt="none", ecolor="0.7", elinewidth=0.5, zorder=1)
-    ax.scatter(spac, area, c=orient, cmap=cmap, norm=norm, s=10, edgecolors="none", zorder=2)
+    ax.errorbar(area, spac, yerr=iqr / 2, fmt="none", ecolor="0.7", elinewidth=0.5, zorder=1)
+    ax.scatter(area, spac, c=orient, cmap=cmap, norm=norm, s=10, edgecolors="none", zorder=2)
     ax.set_xscale("log")
     ax.set_yscale("log")
     cb = fig.colorbar(plt.cm.ScalarMappable(norm=norm, cmap=cmap), ax=ax, fraction=0.046, pad=0.02)
