@@ -115,6 +115,27 @@ miss. The one exception is `tima` when `data/tima` holds no raster: `--check` pr
 
 `docs/acceptance-2026.md` lists every number and every figure difference.
 
+## Releases
+
+The figures and tables come from a local real-data run, because CI cannot
+produce them. After that run, cut a release with:
+
+```bash
+gh release create vX.Y.Z results/figures/*.pdf results/tables/*.tex results/numbers.tex results/numbers.json docs/acceptance-2026.md --notes-file docs/acceptance-2026.md
+```
+
+A release carries exactly these 15 assets:
+
+  - `fig1_workflow.pdf`, `fig2_fingerprints.pdf`, `fig3_phase_comparison.pdf`, `fig4_agreement_map.pdf`
+  - `fig5_pyroxene_tima.pdf`, `fig6_xenotime_callout.pdf`, `fig7_pyroxene_refinement.pdf`, `fig8_lamellae.pdf`
+  - `table1_params.tex`, `table2_phases.tex`, `table3_correspondence.tex`, `table4_concordance.tex`
+  - `numbers.tex`, `numbers.json`, `acceptance-2026.md`
+
+The `release-assets` workflow checks that a published release carries exactly
+these names. Run it by hand against an existing release with the `tag` input.
+The manuscript repository `nwa4587-paper` imports a release with
+`make import IMPORT_ARGS="--tag vX.Y.Z"`.
+
 ## Licensing
 
 The code is under the MIT license (`LICENSE`). Everything that the code writes
